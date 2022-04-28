@@ -20,4 +20,9 @@ float easeOutCirc(float x);
 float easeOutElastic(float x);
 float Vec2Cross( D3DXVECTOR3* v1, D3DXVECTOR3* v2);
 float Vec2Dot(D3DXVECTOR3* v1, D3DXVECTOR3* v2);
+D3DXVECTOR3 WorldCastScreen(D3DXVECTOR3 *screenPos,			// スクリーン座標
+	D3DXVECTOR3 screenSize,									// スクリーンサイズ
+	D3DXMATRIX* mtxView,									// ビューマトリックス
+	D3DXMATRIX* mtxProjection);								// プロジェクションマトリックス
+
 #endif

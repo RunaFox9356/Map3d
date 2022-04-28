@@ -63,6 +63,8 @@ void InitEnemy(void)
 	// エネミーの設置
 	//SetEnemy(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_HUMANSOUL);
 	//SetEnemy(D3DXVECTOR3(20.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_SKELETON);
+
+	s_fMapScale = 1.0f;
 }
 
 //=========================================
@@ -122,19 +124,19 @@ void UpdateEnemy(void)
 			int wheel = GetMouseWheel();
 			if (wheel > 0)
 			{
-				//pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;
-				//pEnemy->log += s_Move.x * MAPMOVE / s_fMapScale;
+				pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;
+				pEnemy->log += s_Move.x * MAPMOVE / s_fMapScale;
 
 			}
 			else if (wheel < 0)
 			{
-				//pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
-				//pEnemy->log -= s_Move.x * MAPMOVE / s_fMapScale;
+				pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
+				pEnemy->log -= s_Move.x * MAPMOVE / s_fMapScale;
 			}
 		}
 
 
-		Collision();	// 床
+		//Collision();	// 床
 
 						// アニメーションや足音の設定
 		if (!pEnemy->notLoop)

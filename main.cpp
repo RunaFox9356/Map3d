@@ -713,8 +713,13 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 			}
 			else
 			{
-			
-				SetEnemy(D3DXVECTOR3(Mouse.x, Mouse.y,0.0f), D3DXVECTOR3(0.0f,0.0f,0.0f),(ENEMY_TYPE)DebugNumberEnemy);
+				Camera *pCamera = GetCamera();
+				Mouse = WorldCastScreen(&Mouse,								// スクリーン座標
+					D3DXVECTOR3(SCREEN_WIDTH,SCREEN_HEIGHT,0.0f),			// スクリーンサイズ
+					&pCamera->mtxView,										// ビューマトリックス
+					&pCamera->mtxProjection);								// プロジェクションマトリックス
+
+				SetEnemy(D3DXVECTOR3(Mouse.x, Mouse.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)DebugNumberEnemy);
 			}
 		}
 	}
