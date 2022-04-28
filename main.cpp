@@ -682,7 +682,7 @@ void SetNormalpos2d(VERTEX_2D *pVtx, float XUP, float XDW, float YUP, float YDW)
 
 void Allfalse(void)
 {
-	falseSetMap();
+	FalseSetMap();
 	//falseSetEnemy();
 }
 void EnemySetSystem(D3DXVECTOR3 Mouse)

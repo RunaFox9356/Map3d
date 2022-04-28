@@ -51,12 +51,12 @@ void SetMap(D3DXVECTOR3 pos, int nType, int tex);
 void InitMapSet(char *Filename);
 void ConversionMap (D3DXVECTOR3 pos,int tex);
 void OutputMap(char *Filename);
-void SizeMap(float SIZ);
+void SizeMap(float fSize);
 Map *GetMap(void);
 bool CollisionMap(D3DXVECTOR3 pos);//当たり判定
 void ConteSet(int stage);			//コンテ
 void PasSetMap(char *Filename);//マップパスをセットする
-int sopiteMap(D3DXVECTOR3 pos);
-void falseSetMap(void);
+int SopiteMap(D3DXVECTOR3 pos);
+void FalseSetMap(void);
 D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos);
 #endif // !_Map_H_

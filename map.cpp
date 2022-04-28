@@ -18,16 +18,13 @@ static D3DXVECTOR3 s_PosOffset;
 static float s_fMapScale;
 static int stage = 0;
 
-
 //================
 //初期化処理
 //================
 void InitMap(void)
 {
-	LPDIRECT3DDEVICE9  pDevice;
-
 	//デバイスの取得
-	pDevice = GetDevice();
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
@@ -103,7 +100,7 @@ void UpdateMap(void)
 	else
 	{
 		// マップのスクロール
-		if (!GetKeyboardPress(DIK_LCONTROL)&&!GetKeyboardPress(DIK_LSHIFT))
+		if (!GetKeyboardPress(DIK_LCONTROL) && !GetKeyboardPress(DIK_LSHIFT))
 		{
 			int wheel = GetMouseWheel();
 			if (wheel > 0)
@@ -133,11 +130,7 @@ void UpdateMap(void)
 
 		pos = (s_aMap[i].pos + s_PosOffset)* s_fMapScale ;
 	
-		SetNormalpos2d(pVtx,
-			pos.x,
-			pos.x + BLOCKSIZEX * s_fMapScale,
-			pos.y,
-			pos.y + BLOCKSIZEY * s_fMapScale);
+		SetNormalpos2d(pVtx, pos.x, pos.x + BLOCKSIZEX * s_fMapScale, pos.y, pos.y + BLOCKSIZEY * s_fMapScale);
 
 		if (!IsDebug())
 		{
@@ -170,7 +163,6 @@ void DrawMap(void)
 			//デバイスのポインタ
 			LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
-
 			//頂点バッファをデータストリームに設定
 			pDevice->SetStreamSource(0, s_pVtxBuffMap, 0, sizeof(VERTEX_2D));
 			//頂点フォーマットの設定
@@ -188,9 +180,6 @@ void DrawMap(void)
 
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);//大きいの縮小
-
-		
-
 		}
 	}
 }
@@ -203,9 +192,9 @@ void SetMap(D3DXVECTOR3 pos, int nType,int tex)
 	VERTEX_2D *pVtx; //頂点へのポインタ
 	s_pVtxBuffMap->Lock(0, 0, (void**)&pVtx, 0);
 
-	Map* pMap = s_aMap;
-	for (int i = 0; i < NUM_MAP; i++, pVtx += 4, pMap++)
+	for (int i = 0; i < NUM_MAP; i++, pVtx += 4)
 	{ 
+		Map* pMap = &s_aMap[i];
 		if (pMap->bUse)
 		{
 			continue;
@@ -266,7 +255,7 @@ void InitMapSet(char *Filename)
 	{
 		for (int nCntX = 0; nCntX < MAP_SIZEX; nCntX++)
 		{//Mapの書き込み
-			SetMap(D3DXVECTOR3(BLOCKSIZEX*nCntX, ((BLOCKSIZEY*(nCntY)) ), 0.0f), 1, aMap[nCntY][nCntX]);
+			SetMap(D3DXVECTOR3(BLOCKSIZEX * nCntX, BLOCKSIZEY * nCntY, 0.0f), 1, aMap[nCntY][nCntX]);
 		}
 	}
 }
@@ -333,7 +322,7 @@ void ConversionMap(D3DXVECTOR3 pos ,int tex)
 //==================
 bool CollisionMap(D3DXVECTOR3 pos)
 {
-	bool Hit = false;//チップとマウスの当たり判定が当たってる時
+	bool isHit = false;//チップとマウスの当たり判定が当たってる時
 	D3DXVECTOR3 mapPos;
 
 	for (int i = 0; i < NUM_MAP; i++)
@@ -348,20 +337,19 @@ bool CollisionMap(D3DXVECTOR3 pos)
 		if (((mapPos.x < pos.x) && (mapPos.x + BLOCKSIZEX * s_fMapScale > pos.x)) &&
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
-			
-			Hit = true;
+			isHit = true;
 		}
 	}
-	return Hit;
+	return isHit;
 }
 
 
 //==================
 //サイズ変更
 //==================
-void SizeMap(float SIZ)
+void SizeMap(float fSize)
 {
-	s_fMapScale = 1.0f / SIZ;
+	s_fMapScale = 1.0f / fSize;
 }
 
 //==================
@@ -381,7 +369,7 @@ void ConteSet(int stage)
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();
-	falseSetMap();
+	FalseSetMap();
 	InitMapSet(&s_aMap[stage].filename[0]);
 
 }
@@ -427,7 +415,7 @@ void PasSetMap(char *Filename)
 	}
 	
 }
-int sopiteMap(D3DXVECTOR3 pos)
+int SopiteMap(D3DXVECTOR3 pos)
 {
 	int Hit = 0;//チップとマウスの当たり判定が当たってる時
 	D3DXVECTOR3 mapPos;
@@ -454,7 +442,7 @@ int sopiteMap(D3DXVECTOR3 pos)
 //+----------
 //マップを全部消す
 //+----------
-void falseSetMap(void)
+void FalseSetMap(void)
 {
 	for (int i = 0; i < NUM_MAP; i++)
 	{
@@ -476,8 +464,8 @@ D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos)
 		if (((mapPos.x < pos.x) && (mapPos.x + BLOCKSIZEX * s_fMapScale > pos.x)) &&
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
-			Pos.x = mapPos.x+ BLOCKSIZEX/2;
-			Pos.y = mapPos.y+ BLOCKSIZEY/2;
+			Pos.x = mapPos.x+ BLOCKSIZEX * 0.5f;
+			Pos.y = mapPos.y+ BLOCKSIZEY * 0.5f;
 		}
 	}
 	return Pos;
