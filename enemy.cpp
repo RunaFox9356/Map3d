@@ -122,19 +122,19 @@ void UpdateEnemy(void)
 			int wheel = GetMouseWheel();
 			if (wheel > 0)
 			{
-				//pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;
-				//pEnemy->log += s_Move.x * MAPMOVE / s_fMapScale;
+				pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;
+				pEnemy->log += s_Move.x * MAPMOVE / s_fMapScale;
 
 			}
 			else if (wheel < 0)
 			{
-				//pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
-				//pEnemy->log -= s_Move.x * MAPMOVE / s_fMapScale;
+				pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
+				pEnemy->log -= s_Move.x * MAPMOVE / s_fMapScale;
 			}
 		}
 
 
-		Collision();	// 床
+		//Collision();	// 床
 
 						// アニメーションや足音の設定
 		if (!pEnemy->notLoop)

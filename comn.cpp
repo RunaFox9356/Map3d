@@ -82,6 +82,33 @@ D3DXVECTOR3	WorldCastVtx(D3DXVECTOR3 vtx, D3DXVECTOR3 FormerPos, D3DXVECTOR3 For
 	return D3DXVECTOR3(mtxWorldVtx._41, mtxWorldVtx._42, mtxWorldVtx._43);
 }
 
+//---------------------------------------------------------------------------
+// スクリーン座標をワールド座標へのキャスト
+//---------------------------------------------------------------------------
+D3DXVECTOR3 WorldCastScreen(D3DXVECTOR3 *screenPos,			// スクリーン座標
+	D3DXVECTOR3 screenSize,									// スクリーンサイズ
+	D3DXMATRIX* View,										// ビューマトリックス
+	D3DXMATRIX* Prj)										// プロジェクションマトリックス
+{
+	// 変数宣言
+	D3DXVECTOR3 ScreenPos;
+
+	// 各行列の逆行列を算出
+	D3DXMATRIX InvView, InvPrj, VP, InvViewport;
+	D3DXMatrixInverse(&InvView, NULL, View);
+	D3DXMatrixInverse(&InvPrj, NULL, Prj);
+	D3DXMatrixIdentity(&VP);
+	VP._11 = screenSize.x / 2.0f; VP._22 = -screenSize.y / 2.0f;
+	VP._41 = screenSize.x / 2.0f; VP._42 = screenSize.y / 2.0f;
+	D3DXMatrixInverse(&InvViewport, NULL, &VP);
+
+	// 逆変換
+	D3DXMATRIX tmp = InvViewport * InvPrj * InvView;
+	D3DXVec3TransformCoord(&ScreenPos, screenPos, &tmp);
+
+	return ScreenPos;
+}
+
 
 //if (s_Enemy[nCnt].bUse)
 //{
