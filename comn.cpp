@@ -93,7 +93,7 @@ D3DXVECTOR3 WorldCastScreen(D3DXVECTOR3 *screenPos,			// スクリーン座標
 	// 変数宣言
 	D3DXVECTOR3 ScreenPos;
 
-	// 計算用マトリックスの定義
+	// 計算用マトリックスの宣言
 	D3DXMATRIX InvView, InvPrj, VP, InvViewport;
 
 	// 各行列の逆行列を算出
