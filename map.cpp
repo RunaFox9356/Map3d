@@ -377,7 +377,7 @@ Map *GetMap(void)
 //==================
 void ConteSet(int stage)
 {
-	
+	LoadSetFile("Data/teki001.txt");
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();

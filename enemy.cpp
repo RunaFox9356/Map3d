@@ -391,6 +391,89 @@ Enemy *GetEnemy(void)
 	return s_Enemy;
 }
 
+void LoadSetFile(char *Filename)
+{
+	FILE *pFile = fopen(Filename, "r");
+
+	if (pFile == NULL)
+	{//ファイルが開いた場合
+		assert(false);
+		return;
+	}
+	D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
+	D3DXVECTOR3 size = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// サイズ
+	D3DXVECTOR3 rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// ロット
+	char aString[128] = {};			// 文字列比較用の変数
+	char aEqual[128] = {};		// ＝読み込み用変数
+	char fileName[ENEMY_TYPE_MAX][128];
+	int nType = 0;
+
+	fscanf(pFile, "%s", &aString);
+
+	while (strncmp(&aString[0], "SCRIPT", 6) != 0)
+	{// 文字列が一致した場合
+		aString[0] = {};
+		// 文字列の読み込み
+		fscanf(pFile, "%s", &aString[0]);
+	}
+	while (strncmp(&aString[0], "END_SCRIPT", 10) != 0)
+	{
+		fscanf(pFile, "%s", &aString[0]);
+
+		if (strncmp(&aString[0], "#", 1) == 0)
+		{// 一列読み込むコメント
+			fgets(&aString[0], sizeof(aString), pFile);
+		}
+		if (strcmp(&aString[0], "SET_ENEMY") == 0)
+		{
+			while (1)
+			{
+				fscanf(pFile, "%s", &aString[0]);
+
+				if (strncmp(&aString[0], "#", 1) == 0)
+				{// 一列読み込むコメント
+					fgets(&aString[0], sizeof(aString), pFile);
+				}
+				if (strcmp(&aString[0], "POS") == 0)
+				{// ファイル名の読み込み
+					fscanf(pFile, "%s", &aEqual[0]);
+
+					fscanf(pFile, "%f", &pos.x);
+					fscanf(pFile, "%f", &pos.y);
+					fscanf(pFile, "%f", &pos.z);
+				}
+				if (strcmp(&aString[0], "SIZE") == 0)
+				{// ファイル名の読み込み
+					fscanf(pFile, "%s", &aEqual[0]);
+
+					fscanf(pFile, "%f", &size.x);
+					fscanf(pFile, "%f", &size.y);
+					fscanf(pFile, "%f", &size.z);
+				}
+				if (strcmp(&aString[0], "ROT") == 0)
+				{// ファイル名の読み込み
+					fscanf(pFile, "%s", &aEqual[0]);
+
+					fscanf(pFile, "%f", &rot.x);
+					fscanf(pFile, "%f", &rot.y);
+					fscanf(pFile, "%f", &rot.z);
+				}
+				if (strcmp(&aString[0], "TYPE") == 0)
+				{
+					fscanf(pFile, "%s", &aEqual[0]);
+
+					fscanf(pFile, "%d", &nType);
+				}
+				if (strcmp(&aString[0], "END_SET") == 0)
+				{
+					SetEnemy(pos, rot, (ENEMY_TYPE)nType);
+					break;
+				}
+			}
+		}
+	}
+
+}
 //----------------------
 // 読込
 //----------------------
@@ -560,57 +643,6 @@ void LoadEnemy(void)
 	}
 }
 //----------------------------
-//ファイルの入力マップ情報
-//----------------------------
-void LoadSetFile(char *Filename)
-{
-	char	s_aString[256];//
-	int		Num_Tex = 0;
-	int     MoveSet = 0;
-
-
-	// ファイルポインタの宣言
-	FILE* pFile;
-
-	//ファイルを開く
-	pFile = fopen(Filename, "r");
-	int nCntEnemy = 0;
-	if (pFile != NULL)
-	{//ファイルが開いた場合
-		fscanf(pFile, "%s", &s_aString);
-
-		while (strncmp(&s_aString[0], "SCRIPT", 6) != 0)
-		{//スタート来るまで空白読み込む
-			s_aString[0] = {};
-			fscanf(pFile, "%s", &s_aString[0]);
-		}
-		D3DXVECTOR3	s_modelMainpos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		while (strncmp(&s_aString[0], "END_SCRIPT", 10) != 0)
-		{// 文字列の初期化と読み込み// 文字列の初期化と読み込み
-
-			fscanf(pFile, "%s", &s_aString[0]);
-
-			if (strncmp(&s_aString[0], "#", 1) == 0)
-			{//これのあとコメント
-				fgets(&s_aString[0], sizeof(s_aString), pFile);
-				continue;
-			}
-			if (strcmp(&s_aString[0], "ENEMY_FILENAME") == 0)
-			{
-				fscanf(pFile, "%s", &s_aString[0]);//＝読み込むやつ
-				
-
-			}
-			if (strcmp(&s_aString[0], "END_ENEMYRSET") == 0)
-			{
-				nCntEnemy++;
-			}
-		}
-		//ファイルを閉じる
-		fclose(pFile);
-	}
-}
-//----------------------------
 //ファイルの出力マップ情報改造
 //----------------------------
 void OutputEnemy(char *Filename)
@@ -633,11 +665,12 @@ void OutputEnemy(char *Filename)
 		
 		if (s_Enemy[nCntEnemy].isUse)
 		{
-			//s_Enemy[nCntEnemy].pos.y += Log;
+			s_Enemy[nCntEnemy].pos.y -= s_Enemy[nCntEnemy].log;
 			fprintf(pFile, "SET_ENEMY\n");
 			fprintf(pFile, "TYPE = %d\n", s_Enemy[nCntEnemy].type);
 			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x, s_Enemy[nCntEnemy].pos.y - s_Enemy[nCntEnemy].log, s_Enemy[nCntEnemy].pos.z);
 			fprintf(pFile, "SIZE = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].scale.x, s_Enemy[nCntEnemy].scale.y, s_Enemy[nCntEnemy].scale.z);
+			fprintf(pFile, "ROT = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].rot.x, s_Enemy[nCntEnemy].rot.y, s_Enemy[nCntEnemy].rot.z);
 			fprintf(pFile, "END_SET\n");
 			fprintf(pFile, "\n");
 		}
