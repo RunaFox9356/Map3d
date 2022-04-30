@@ -125,13 +125,13 @@ void UpdateEnemy(void)
 			if (wheel > 0)
 			{
 				pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;
-				pEnemy->log += s_Move.x * MAPMOVE / s_fMapScale;
+				pEnemy->fLog += s_Move.x * MAPMOVE / s_fMapScale;
 
 			}
 			else if (wheel < 0)
 			{
 				pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
-				pEnemy->log -= s_Move.x * MAPMOVE / s_fMapScale;
+				pEnemy->fLog -= s_Move.x * MAPMOVE / s_fMapScale;
 			}
 		}
 
@@ -636,7 +636,7 @@ void OutputEnemy(char *Filename)
 			//s_Enemy[nCntEnemy].pos.y += Log;
 			fprintf(pFile, "SET_ENEMY\n");
 			fprintf(pFile, "TYPE = %d\n", s_Enemy[nCntEnemy].type);
-			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x, s_Enemy[nCntEnemy].pos.y - s_Enemy[nCntEnemy].log, s_Enemy[nCntEnemy].pos.z);
+			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x, s_Enemy[nCntEnemy].pos.y - s_Enemy[nCntEnemy].fLog, s_Enemy[nCntEnemy].pos.z);
 			fprintf(pFile, "SIZE = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].scale.x, s_Enemy[nCntEnemy].scale.y, s_Enemy[nCntEnemy].scale.z);
 			fprintf(pFile, "END_SET\n");
 			fprintf(pFile, "\n");

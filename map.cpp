@@ -154,7 +154,6 @@ void DrawMap(void)
 	{
 		for (int i = 0; i < NUM_MAP; i++)
 		{
-
 			if (!s_aMap[i].bUse)
 			{
 				continue;
@@ -173,10 +172,7 @@ void DrawMap(void)
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);//大きいの縮小
 
-			pDevice->DrawPrimitive(
-				D3DPT_TRIANGLESTRIP,
-				4 * i,
-				2);
+			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 4 * i, 2);
 
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);//大きいの縮小
@@ -305,7 +301,7 @@ void ConversionMap(D3DXVECTOR3 pos ,int tex)
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
 			s_aMap[i].tex = tex;
-		
+
 			int X = (s_aMap[i].tex % X_MAP);
 			int Y = (s_aMap[i].tex / X_MAP);
 
@@ -363,15 +359,13 @@ Map *GetMap(void)
 //==================
 //コンテ処理
 //==================
-void ConteSet(int stage)
+void ConteSet(int nStage)
 {
-	
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();
 	FalseSetMap();
-	InitMapSet(&s_aMap[stage].filename[0]);
-
+	InitMapSet(s_aMap[nStage].filename);
 }
 
 //==================
@@ -382,7 +376,7 @@ void PasSetMap(char *Filename)
 	//ファイルを開く
 	Enemy *Enemy = GetEnemy();
 	FILE *pFile = fopen(&Filename[0], "r");
-	char	s_aString[256];//ファイルの文字入れる
+	char s_aString[256];//ファイルの文字入れる
 	if (pFile != NULL)
 	{//ファイルが開いた場合
 		fscanf(pFile, "%s", &s_aString);
@@ -390,23 +384,23 @@ void PasSetMap(char *Filename)
 		while (strncmp(&s_aString[0], "SCRIPT", 6) != 0)
 		{//スタート来るまで空白読み込む
 			s_aString[0] = {};
-			fscanf(pFile, "%s", &s_aString[0]);
+			fscanf(pFile, "%s", s_aString);
 		}
 		int number = 0;
-		while (strncmp(&s_aString[0], "END_SCRIPT", 10) != 0)
+		while (strncmp(s_aString, "END_SCRIPT", 10) != 0)
 		{// 文字列の初期化と読み込み// 文字列の初期化と読み込み
-			fscanf(pFile, "%s", &s_aString[0]);
+			fscanf(pFile, "%s", s_aString);
 
-			if (strcmp(&s_aString[0], "MAPLYNK") == 0)
+			if (strcmp(s_aString, "MAPLYNK") == 0)
 			{
-				fscanf(pFile, "%s", &s_aString[0]);//＝読み込むやつ
-				fscanf(pFile, "%s", &s_aMap[number].filename[0]);
+				fscanf(pFile, "%s", s_aString);//＝読み込むやつ
+				fscanf(pFile, "%s", s_aMap[number].filename);
 				number++;
 			}
-			if (strcmp(&s_aString[0], "ENEMYLYNK") == 0)
+			if (strcmp(s_aString, "ENEMYLYNK") == 0)
 			{
-				fscanf(pFile, "%s", &s_aString[0]);//＝読み込むやつ
-				fscanf(pFile, "%s", &s_aString[0]);
+				fscanf(pFile, "%s", s_aString);//＝読み込むやつ
+				fscanf(pFile, "%s", s_aString);
 				
 			}
 		}

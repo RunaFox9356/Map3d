@@ -205,7 +205,7 @@ static void funcFileSave(HWND hWnd, bool nMap)
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	//ポイント構造体
-	POINT    pt;
+	POINT pt;
 	int nID;//返り値を格納
 	static HWND hWndEditlnput1;		//入力ウィンドウハンドル(識別子)
 	switch (uMsg)

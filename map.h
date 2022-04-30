@@ -54,7 +54,7 @@ void OutputMap(char *Filename);
 void SizeMap(float fSize);
 Map *GetMap(void);
 bool CollisionMap(D3DXVECTOR3 pos);//当たり判定
-void ConteSet(int stage);			//コンテ
+void ConteSet(int nStage);			//コンテ
 void PasSetMap(char *Filename);//マップパスをセットする
 int SopiteMap(D3DXVECTOR3 pos);
 void FalseSetMap(void);

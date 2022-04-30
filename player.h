@@ -14,8 +14,8 @@
 // マクロ
 //------------------------------------
 
-#define Attenuation	(0.5f)		//減衰係数
-#define Speed	(1.0f)			//スピード
+#define ATTENUATION	(0.5f)		//減衰係数
+#define SPEED	(1.0f)			//スピード
 #define WIDTH (10.0f)			//モデルの半径
 #define MAX_PRAYER (16)			//最大数
 #define MAX_MOVE (9)			//アニメーションの最大数

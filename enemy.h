@@ -14,8 +14,8 @@
 //------------------------------------
 // マクロ
 //------------------------------------
-#define Attenuation	(0.5f)		//減衰係数
-#define Speed	(1.0f)			//スピード
+#define ATTENUATION	(0.5f)		//減衰係数
+#define SPEED	(1.0f)			//スピード
 #define WIDTH (10.0f)			//モデルの半径
 #define MAX_PRAYER (16)			//最大数
 #define MAX_MOVE (9)			//アニメーションの最大数
@@ -63,10 +63,9 @@ typedef struct
 	int			nMaxModelParts;				// 扱うモデルパーツ数
 	int			nMaxMotion;					// モーション数
 
-	int			shadow;						// 影番号
-	int			invincible;					// 無敵時間
-	float		consumption;				// 計算用
-	float		log;
+	int			nInvincible;				// 無敵時間
+	float		fConsumption;				// 計算用
+	float		fLog;
 	
 	bool		bMotionBlend;				// モーションブレンド
 	bool		bMotion;					// モーションを使用状況
