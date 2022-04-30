@@ -283,13 +283,11 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			break;
 		case ID_40006:
 			//バージョン(A)
-			MessageBox(hWnd, ("更新したこと\n敵消せます\n敵動かせます"), ("マップエディターVer1.1"), MB_OK);
-			
+			MessageBox(hWnd, ("更新したこと\n敵消せます\n敵動かせます"), ("マップエディターVer1.1"), MB_OK);		
 			break;
 		case ID_40007:
 			//バージョン(A)
 			MessageBox(hWnd,("範囲選択"),  ("マップエディターVer1.2"), MB_OK);
-
 			break;
 		default:
 			press = false;

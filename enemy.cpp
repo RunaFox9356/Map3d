@@ -29,6 +29,7 @@ static Enemy s_EnemyType[ENEMY_TYPE_MAX];	// エネミー種別の構造体
 static MODELDATAPLAYER s_ModelData[MAX_MOVE];
 
 static float s_fMapScale;
+static float fLog;
 static D3DXVECTOR3 s_Move(5.0f, 0.0f, 0.0f);
 
 static int s_parts;	// パーツの最大数
@@ -63,7 +64,7 @@ void InitEnemy(void)
 	// エネミーの設置
 	//SetEnemy(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_HUMANSOUL);
 	//SetEnemy(D3DXVECTOR3(20.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_SKELETON);
-
+	fLog = 0.0f;
 	s_fMapScale = 1.0f;
 }
 
@@ -116,22 +117,17 @@ void UpdateEnemy(void)
 			pEnemy->motionType = ANIME_NORMAL;
 		}
 
-
-
 		// マップのスクロール
 		if (!GetKeyboardPress(DIK_LCONTROL) && !GetKeyboardPress(DIK_LSHIFT))
 		{
 			int wheel = GetMouseWheel();
 			if (wheel > 0)
 			{
-				pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;
-				pEnemy->log += s_Move.x * MAPMOVE / s_fMapScale;
-
+				pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;				
 			}
 			else if (wheel < 0)
 			{
 				pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
-				pEnemy->log -= s_Move.x * MAPMOVE / s_fMapScale;
 			}
 		}
 
@@ -183,6 +179,21 @@ void UpdateEnemy(void)
 				&pEnemy->motion[(int)(pEnemy->motionType)]);				// モーション情報
 		}
 	}
+	//移動記録を保存
+	if (!GetKeyboardPress(DIK_LCONTROL) && !GetKeyboardPress(DIK_LSHIFT))
+	{
+		int wheel = GetMouseWheel();
+		if (wheel > 0)
+		{	
+			fLog += s_Move.x * MAPMOVE / s_fMapScale;
+
+		}
+		else if (wheel < 0)
+		{
+			fLog -= s_Move.x * MAPMOVE / s_fMapScale;
+		}
+	}
+	
 }
 
 //=========================================
@@ -266,6 +277,7 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->pos = pos;									// 位置の初期化
 		pEnemy->posOld = pEnemy->pos;						// 過去位置の初期化
 		pEnemy->rot = rot;									// 向きの初期化
+		pEnemy->log = fLog;
 		pEnemy->mtxWorld = {};								// ワールドマトリックス
 		pEnemy->motionType = ANIME_NORMAL;					// ニュートラルモーション
 		pEnemy->motionTypeOld = pEnemy->motionType;			// 前回のモーション
@@ -525,6 +537,7 @@ void LoadEnemy(void)
 			// プレイヤー情報の初期化
 			pEnemy->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 位置の初期化
 			pEnemy->posOld = pEnemy->pos;					// 過去位置の初期化
+			s_Enemy->log = fLog;
 			pEnemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);;	// 向きの初期化
 			pEnemy->modelMin = D3DXVECTOR3(FLT_MAX, FLT_MAX, FLT_MAX);		// 頂点座標の最小値
 			pEnemy->modelMax = D3DXVECTOR3(-FLT_MAX, -FLT_MAX, -FLT_MAX);	// 頂点座標の最大値
@@ -653,6 +666,10 @@ void OutputEnemy(char *Filename)
 	D3DXVECTOR3 pos;
 	//ファイル開け
 	FILE *pFile = fopen(Filename, "w");
+	if (pFile == NULL)
+	{
+		assert(false);
+	}
 	fprintf(pFile, "#-----------------------\n");
 	fprintf(pFile, "#エネミーの設定スクリプト\n");
 	fprintf(pFile, "#Author:hamada ryuuga\n");
@@ -667,10 +684,10 @@ void OutputEnemy(char *Filename)
 		
 		if (s_Enemy[nCntEnemy].isUse)
 		{
-			s_Enemy[nCntEnemy].pos.y -= s_Enemy[nCntEnemy].log;
+			
 			fprintf(pFile, "SET_ENEMY\n");
 			fprintf(pFile, "TYPE = %d\n", s_Enemy[nCntEnemy].type);
-			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x, s_Enemy[nCntEnemy].pos.y - s_Enemy[nCntEnemy].log, s_Enemy[nCntEnemy].pos.z);
+			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x - fLog, s_Enemy[nCntEnemy].pos.y, s_Enemy[nCntEnemy].pos.z);
 			fprintf(pFile, "SIZE = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].scale.x, s_Enemy[nCntEnemy].scale.y, s_Enemy[nCntEnemy].scale.z);
 			fprintf(pFile, "ROT = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].rot.x, s_Enemy[nCntEnemy].rot.y, s_Enemy[nCntEnemy].rot.z);
 			fprintf(pFile, "END_SET\n");
