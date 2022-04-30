@@ -9,6 +9,7 @@
 #define _MAP_H_
 
 #include"main.h"
+
 #define MAP_FILE0	"Data/txt/map.txt"
 #define MAP_FILE1	"Data/txt/map1.txt"
 #define MAP_FILE2	"Data/txt/map2.txt"
@@ -48,15 +49,15 @@ void UninitMap(void);
 void UpdateMap(void);
 void DrawMap(void);
 void SetMap(D3DXVECTOR3 pos, int nType, int tex);
-void InitMapSet(char *Filename);
-void ConversionMap (D3DXVECTOR3 pos,int tex);
+void InitMapSet(char *Filename);					//読み込み
+void ConversionMap (D3DXVECTOR3 pos,int tex);//マップチップ変更処理
 void OutputMap(char *Filename);
 void SizeMap(float SIZ);
 Map *GetMap(void);
-bool CollisionMap(D3DXVECTOR3 pos);//当たり判定
-void ConteSet(int stage);			//コンテ
-void PasSetMap(char *Filename);//マップパスをセットする
-int sopiteMap(D3DXVECTOR3 pos);
-void falseSetMap(void);
-D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos);
+bool CollisionMap(D3DXVECTOR3 pos);					//当たり判定
+void ConteSet(int stage);							//コンテ
+void PasSetMap(char *Filename);						//マップパスをセットする
+int SopiteMap(D3DXVECTOR3 pos);						
+void FalseSetMap(void);								//マップ削除
+D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos);				//エネミをマップの上に置く処理
 #endif // !_Map_H_

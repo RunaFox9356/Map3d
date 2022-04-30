@@ -33,6 +33,20 @@ enum ENEMY_TYPE
 	ENEMY_TYPE_UNGAIKYO,		// 雲外鏡
 	ENEMY_TYPE_KAMAITACHI,		// かまいたち
 	ENEMY_TYPE_BUDDHA,			// ブツー
+	ENEMY_TYPE_NULL1,		// がいこつ
+	ENEMY_TYPE_NULL2,		// 雲外鏡
+	ENEMY_TYPE_NULL3,		// かまいたち
+	ENEMY_TYPE_NULL4,			// ブツー
+	ENEMY_TYPE_NULL5,
+	ENEMY_TYPE_NULL6,
+	ENEMY_TYPE_NULL7,
+	ENEMY_TYPE_NULL8,
+	ENEMY_TYPE_NULL9,
+	ENEMY_TYPE_NULL10,
+	ENEMY_TYPE_NULL11,
+	ENEMY_TYPE_NULL12,
+	ENEMY_TYPE_NULL13,
+	ENEMY_TYPE_NULL14,
 	ENEMY_TYPE_MAX
 };
 
@@ -71,6 +85,7 @@ typedef struct
 	bool		bMotionBlend;				// モーションブレンド
 	bool		bMotion;					// モーションを使用状況
 
+	bool        bSelect;
 	bool		isUse;						// 使ってるか使ってないか
 	bool		notLoop;					// ループするかしないか
 }Enemy;
@@ -89,6 +104,7 @@ void LoadEnemy(void);	// 読込
 void LoadSetFile(char *Filename);
 void OutputEnemy(char *Filename);
 void ConversionDes(D3DXVECTOR3 Mouse);
+void SelectDes(D3DXVECTOR3 pos);
 //void falseSetEnemy(void);
 //void selectDes(D3DXVECTOR3 Mouse, D3DXVECTOR3 Size);
 #endif

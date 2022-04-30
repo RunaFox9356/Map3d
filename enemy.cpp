@@ -15,7 +15,7 @@
 #include "utility.h"
 #include "motion.h"
 #include "map.h"
-
+#include "comn.h"
 //--------------------------------------------------
 // マクロ定義
 //--------------------------------------------------
@@ -194,11 +194,13 @@ void DrawEnemy(void)
 	D3DXMATRIX mtxScale, mtxTrans, mtxRot;	// 計算用マトリックス
 	D3DMATERIAL9 marDef;
 	D3DXMATERIAL *pMat = {};
-	D3DXVECTOR3 scale(1.8f, 1.8f, 1.8f);
+
 
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
+
+		D3DXVECTOR3 scale(pEnemy->scale.x, pEnemy->scale.y, pEnemy->scale.z);
 
 		if (!pEnemy->isUse)//使ってるやつ出す
 		{
@@ -405,7 +407,7 @@ void LoadSetFile(char *Filename)
 	D3DXVECTOR3 rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// ロット
 	char aString[128] = {};			// 文字列比較用の変数
 	char aEqual[128] = {};		// ＝読み込み用変数
-	char fileName[ENEMY_TYPE_MAX][128];
+//	char fileName[ENEMY_TYPE_MAX][128];
 	int nType = 0;
 
 	fscanf(pFile, "%s", &aString);
@@ -435,7 +437,7 @@ void LoadSetFile(char *Filename)
 					fgets(&aString[0], sizeof(aString), pFile);
 				}
 				if (strcmp(&aString[0], "POS") == 0)
-				{// ファイル名の読み込み
+				{// POSの読み込み
 					fscanf(pFile, "%s", &aEqual[0]);
 
 					fscanf(pFile, "%f", &pos.x);
@@ -443,7 +445,7 @@ void LoadSetFile(char *Filename)
 					fscanf(pFile, "%f", &pos.z);
 				}
 				if (strcmp(&aString[0], "SIZE") == 0)
-				{// ファイル名の読み込み
+				{// SIZEの読み込み
 					fscanf(pFile, "%s", &aEqual[0]);
 
 					fscanf(pFile, "%f", &size.x);
@@ -451,7 +453,7 @@ void LoadSetFile(char *Filename)
 					fscanf(pFile, "%f", &size.z);
 				}
 				if (strcmp(&aString[0], "ROT") == 0)
-				{// ファイル名の読み込み
+				{// ROTの読み込み
 					fscanf(pFile, "%s", &aEqual[0]);
 
 					fscanf(pFile, "%f", &rot.x);
@@ -678,4 +680,54 @@ void OutputEnemy(char *Filename)
 
 	fprintf(pFile, "END_SCRIPT #ここ消さない");
 	fclose(pFile);
+}
+//----------------------------
+//エネミ-のサイズと座標とタイプを変更する
+//----------------------------
+void SelectDes(D3DXVECTOR3 pos)
+{
+	Camera *pCamera = GetCamera();
+	pos = WorldCastScreen(&pos,								// スクリーン座標
+		D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
+		&pCamera->mtxView,										// ビューマトリックス
+		&pCamera->mtxProjection);								// プロジェクションマトリックス
+
+	D3DXVECTOR3 enemyPos;
+	for (int nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++)
+	{
+		if (s_Enemy[nCntEnemy].isUse)
+		{
+			if (s_Enemy[nCntEnemy].bSelect)
+			{
+				s_Enemy[nCntEnemy].pos = D3DXVECTOR3(pos.x, pos.y, 0.0f);
+			}
+			
+			D3DXVECTOR3 Size = s_Enemy[nCntEnemy].modelMax - s_Enemy[nCntEnemy].modelMin;
+
+			if (((s_Enemy[nCntEnemy].pos.x - Size.x* s_fMapScale < pos.x) && (s_Enemy[nCntEnemy].pos.x + Size.x* s_fMapScale > pos.x)) &&
+				((s_Enemy[nCntEnemy].pos.y - Size.y*2* s_fMapScale < pos.y) && (s_Enemy[nCntEnemy].pos.y + Size.y * 2 * s_fMapScale > pos.y)))
+			{
+				//マウスカーソル合わさってたらサイズ変更がかかる
+				s_Enemy[nCntEnemy].scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
+				if (GetKeyboardPress(DIK_LCONTROL))
+				{//CONTROL押しながら
+					
+				}
+				if (GetKeyboardTrigger(DIK_Z))
+				{
+					s_Enemy[nCntEnemy].bSelect = !s_Enemy[nCntEnemy].bSelect;
+				}
+				if (GetKeyboardTrigger(DIK_D))
+				{
+					s_Enemy[nCntEnemy].isUse = false;
+					s_Enemy[nCntEnemy].pos = D3DXVECTOR3(NULL, NULL, NULL);
+				}
+			}
+			else
+			{
+				s_Enemy[nCntEnemy].scale = D3DXVECTOR3(1.8f, 1.8f, 1.8f);
+			}
+
+		}
+	}
 }

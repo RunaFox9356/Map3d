@@ -98,7 +98,7 @@ void UpdateMap(void)
 {
 	if (!IsDebug())
 	{
-		s_PosOffset += s_Move;
+		//s_PosOffset += s_Move;
 	}
 	else
 	{
@@ -164,9 +164,12 @@ void DrawMap(void)
 
 			if (!s_aMap[i].bUse)
 			{
+				
+			}
+			if (s_aMap[i].tex == 32)
+			{
 				continue;
 			}
-
 			//デバイスのポインタ
 			LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
@@ -175,8 +178,11 @@ void DrawMap(void)
 			pDevice->SetStreamSource(0, s_pVtxBuffMap, 0, sizeof(VERTEX_2D));
 			//頂点フォーマットの設定
 			pDevice->SetFVF(FVF_VERTEX_2D);
+			
+		
 			//テクスチャの設定
 			pDevice->SetTexture(0, s_pTextureMap);
+			
 
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);//大きいの縮小
@@ -202,7 +208,7 @@ void SetMap(D3DXVECTOR3 pos, int nType,int tex)
 {
 	VERTEX_2D *pVtx; //頂点へのポインタ
 	s_pVtxBuffMap->Lock(0, 0, (void**)&pVtx, 0);
-
+	s_PosOffset.x = 0.0f;
 	Map* pMap = s_aMap;
 	for (int i = 0; i < NUM_MAP; i++, pVtx += 4, pMap++)
 	{ 
@@ -316,7 +322,7 @@ void ConversionMap(D3DXVECTOR3 pos ,int tex)
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
 			s_aMap[i].tex = tex;
-		
+			
 			int X = (s_aMap[i].tex % X_MAP);
 			int Y = (s_aMap[i].tex / X_MAP);
 
@@ -381,7 +387,7 @@ void ConteSet(int stage)
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();
-	falseSetMap();
+	FalseSetMap();
 	InitMapSet(&s_aMap[stage].filename[0]);
 
 }
@@ -427,7 +433,7 @@ void PasSetMap(char *Filename)
 	}
 	
 }
-int sopiteMap(D3DXVECTOR3 pos)
+int SopiteMap(D3DXVECTOR3 pos)
 {
 	int Hit = 0;//チップとマウスの当たり判定が当たってる時
 	D3DXVECTOR3 mapPos;
@@ -454,7 +460,7 @@ int sopiteMap(D3DXVECTOR3 pos)
 //+----------
 //マップを全部消す
 //+----------
-void falseSetMap(void)
+void FalseSetMap(void)
 {
 	for (int i = 0; i < NUM_MAP; i++)
 	{
@@ -477,7 +483,7 @@ D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos)
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
 			Pos.x = mapPos.x+ BLOCKSIZEX/2;
-			Pos.y = mapPos.y+ BLOCKSIZEY/2;
+			Pos.y = mapPos.y+ BLOCKSIZEY;
 		}
 	}
 	return Pos;
