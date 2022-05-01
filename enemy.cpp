@@ -277,7 +277,7 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->pos = pos;									// 位置の初期化
 		pEnemy->posOld = pEnemy->pos;						// 過去位置の初期化
 		pEnemy->rot = rot;									// 向きの初期化
-		pEnemy->log = fLog;
+		pEnemy->fLog = fLog;
 		pEnemy->mtxWorld = {};								// ワールドマトリックス
 		pEnemy->motionType = ANIME_NORMAL;					// ニュートラルモーション
 		pEnemy->motionTypeOld = pEnemy->motionType;			// 前回のモーション
@@ -537,7 +537,7 @@ void LoadEnemy(void)
 			// プレイヤー情報の初期化
 			pEnemy->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 位置の初期化
 			pEnemy->posOld = pEnemy->pos;					// 過去位置の初期化
-			s_Enemy->log = fLog;
+			pEnemy->fLog = fLog;
 			pEnemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);;	// 向きの初期化
 			pEnemy->modelMin = D3DXVECTOR3(FLT_MAX, FLT_MAX, FLT_MAX);		// 頂点座標の最小値
 			pEnemy->modelMax = D3DXVECTOR3(-FLT_MAX, -FLT_MAX, -FLT_MAX);	// 頂点座標の最大値
