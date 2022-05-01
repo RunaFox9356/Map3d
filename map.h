@@ -50,7 +50,7 @@ void UninitMap(void);
 void UpdateMap(void);
 void DrawMap(void);
 void SetMap(D3DXVECTOR3 pos, int nType, int tex);
-void InitMapSet(char *Filename);
+void InitMapSet(char *Filename);					//読み込み
 void ConversionMap (D3DXVECTOR3 pos,int tex);
 void OutputMap(char *Filename);
 void SizeMap(float fSize);
@@ -59,6 +59,6 @@ bool CollisionMap(D3DXVECTOR3 pos);//当たり判定
 void ConteSet(int nStage);			//コンテ
 void PasSetMap(char *Filename);//マップパスをセットする
 int SopiteMap(D3DXVECTOR3 pos);
-void FalseSetMap(void);
-D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos);
+void FalseSetMap(void);								//マップ削除
+D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos);				//エネミをマップの上に置く処理
 #endif // !_Map_H_

@@ -95,7 +95,7 @@ void UpdateMap(void)
 {
 	if (!IsDebug())
 	{
-		s_PosOffset += s_Move;
+		//s_PosOffset += s_Move;
 	}
 	else
 	{
@@ -156,9 +156,12 @@ void DrawMap(void)
 		{
 			if (!s_aMap[i].bUse)
 			{
+				
+			}
+			if (s_aMap[i].tex == 32)
+			{
 				continue;
 			}
-
 			//デバイスのポインタ
 			LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
@@ -167,7 +170,10 @@ void DrawMap(void)
 			//頂点フォーマットの設定
 			pDevice->SetFVF(FVF_VERTEX_2D);
 			//テクスチャの設定
+		
+			//テクスチャの設定
 			pDevice->SetTexture(0, s_pTextureMap);
+			
 
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);//大きいの縮小
@@ -187,7 +193,7 @@ void SetMap(D3DXVECTOR3 pos, int nType,int tex)
 {
 	VERTEX_2D *pVtx; //頂点へのポインタ
 	s_pVtxBuffMap->Lock(0, 0, (void**)&pVtx, 0);
-
+	s_PosOffset.x = 0.0f;
 	for (int i = 0; i < NUM_MAP; i++, pVtx += 4)
 	{ 
 		Map* pMap = &s_aMap[i];
@@ -361,6 +367,7 @@ Map *GetMap(void)
 //==================
 void ConteSet(int nStage)
 {
+	LoadSetFile("Data/teki001.txt");
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();
@@ -459,7 +466,7 @@ D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos)
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
 			Pos.x = mapPos.x+ BLOCKSIZEX * 0.5f;
-			Pos.y = mapPos.y+ BLOCKSIZEY * 0.5f;
+			Pos.y = mapPos.y+ BLOCKSIZEY;
 		}
 	}
 	return Pos;
