@@ -19,7 +19,7 @@ static MODELDATAPLAYER s_ModelData[MAX_MOVE];
 
 static int s_time, s_parts;//タイマーとパーツの最大数
 static int s_pow;//ジャンプパワー
-static int nMotion;//
+static int s_nMotion;//
 
 //------------------------------------
 // プロトタイプ宣言
