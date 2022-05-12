@@ -61,9 +61,6 @@ void InitEnemy(void)
 	// 読込
 	LoadEnemy();
 
-	// エネミーの設置
-	//SetEnemy(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_HUMANSOUL);
-	//SetEnemy(D3DXVECTOR3(20.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_SKELETON);
 	s_fLog = 0.0f;
 	s_fMapScale = 1.0f;
 }
@@ -73,7 +70,6 @@ void InitEnemy(void)
 //=========================================
 void UninitEnemy(void)
 {
-
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
@@ -283,7 +279,6 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
 		pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
 		pEnemy->isUse = true;								// 使用状況
-		
 
 		break;
 	}
@@ -310,8 +305,6 @@ void AnimationSet(int animation)
 //-------------------------------
 void MoveSet(void)
 {
-
-
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
@@ -320,16 +313,9 @@ void MoveSet(void)
 		{
 			continue;
 		}
-
-
-		//	bool bHit = cLnhale[0].Hit(pEnemy->pos, SIZE_ENEMY);
-
-		/*if (bHit)
-		{
-		pEnemy->isUse = false;
-		}*/
 	}
 }
+
 //-------------------------------
 //当たり判定まとめ
 //-------------------------------
@@ -485,7 +471,6 @@ void LoadSetFile(char *Filename)
 			}
 		}
 	}
-
 }
 
 //----------------------

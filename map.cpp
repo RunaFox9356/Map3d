@@ -7,6 +7,7 @@
 #include "map.h"
 #include "input.h"
 #include "enemy.h"
+#include "process.h"
 #include <stdio.h>
 
 //スタティック変数
