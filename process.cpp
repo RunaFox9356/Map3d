@@ -29,6 +29,7 @@ static bool EnemyAlignment = false;				// マップのマス目基準にするかしないか
 static float Size = 1.0f;
 static bool EnemyMode = false;					// MapいじるかEnemyいじるか
 static bool s_bDebug;							// デバッグ中か否か
+static CPlayer player;
 
 //=========================================
 // プロトタイプ宣言
@@ -49,7 +50,7 @@ void InitProcess()
 	InitPallet();
 	InitPalletE();
 	InitSelect();
-	InitPlayer();
+	player.Init();
 }
 
 //-----------------------------------------
@@ -63,7 +64,7 @@ void UninitProcess()
 	UninitEnemy();
 	UninitMap();
 	UninitPallet();
-	UninitPlayer();
+	player.Uninit();
 	UninitPalletE();
 	UninitSelect();
 }
@@ -76,7 +77,7 @@ void UpdateProcess()
 	UpdateCamera();	// カメラ
 	UpdateBG();
 	UpdateEnemy();
-	UpdatePlayer();	// プレイヤー
+	player.Update();
 	UpdateMap();
 	UpdateSelect(DebugNumber, s_DebugNumberEnemy);
 
@@ -144,7 +145,7 @@ void DrawProcess()
 	// 2Dの前に3Dを置く
 	GetDevice()->Clear(0, NULL, (D3DCLEAR_ZBUFFER), D3DCOLOR_RGBA(0, 0, 0, 0), 1.0f, 0);
 	DrawEnemy();
-	DrawPlayer();		// プレイヤー
+	player.Draw();
 }
 
 //------------------------

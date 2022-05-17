@@ -21,12 +21,19 @@
 // マクロ定義
 #define MAX_ENEMY	(100)	// 最大エネミー数
 #define SIZE_ENEMY (D3DXVECTOR3(50.0f,50.0f,0.0f))
+//#define ATTENUATION	(0.5f)		//減衰係数
+//#define SPEED	(1.0f)			//スピード
+#define WIDTH (10.0f)			//モデルの半径
+#define MAX_PRAYER (16)			//最大数
+#define MAX_MOVE (9)			//アニメーションの最大数
+#define INVINCIBLE (300)		//無敵時間
+
 //--------------------------------------------------
 // 静的変数
 //--------------------------------------------------
 static Enemy s_Enemy[MAX_ENEMY];		// エネミーの構造体
 static Enemy s_EnemyType[ENEMY_TYPE_MAX];	// エネミー種別の構造体
-static MODELDATAPLAYER s_ModelData[MAX_MOVE];
+static CPlayer::MODELDATAPLAYER s_ModelData[MAX_MOVE];
 
 static float s_fMapScale;
 static float s_fLog;
@@ -39,7 +46,7 @@ static int s_nMotion; //
 //--------------------------------------------------
 // プロトタイプ宣言
 //--------------------------------------------------
-static void Loadmotion(MODELDATAPLAYER* set, int Setnumber);	// モーションの読込
+static void Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber);	// モーションの読込
 static void AnimationSet(int animation);						// アニメーションの計算
 static void MoveSet(void);										// ムーブセット
 static void Collision(void);									// 当たり判定まとめ
@@ -110,7 +117,7 @@ void UpdateEnemy(void)
 
 		if (!pEnemy->bMotion)
 		{// 使用してるモーションがない場合
-			pEnemy->motionType = ANIME_NORMAL;
+			pEnemy->motionType = CPlayer::ANIME_NORMAL;
 		}
 
 		// マップのスクロール
@@ -132,7 +139,7 @@ void UpdateEnemy(void)
 		// アニメーションや足音の設定
 		if (!pEnemy->notLoop)
 		{
-			pEnemy->motionType = ANIME_NORMAL;
+			pEnemy->motionType = CPlayer::ANIME_NORMAL;
 		}
 
 		if (s_pow >= 1 && s_pow <= 10)
@@ -144,7 +151,7 @@ void UpdateEnemy(void)
 		pEnemy->move.y -= 1.0f;
 		if (GetKeyboardPress(DIK_B))
 		{
-			pEnemy->motionType = ANIME_ATTACK;//攻撃
+			pEnemy->motionType = CPlayer::ANIME_ATTACK;//攻撃
 
 			pEnemy->notLoop = true;
 		}
@@ -274,7 +281,7 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->rot = rot;									// 向きの初期化
 		pEnemy->fLog = s_fLog;
 		pEnemy->mtxWorld = {};								// ワールドマトリックス
-		pEnemy->motionType = ANIME_NORMAL;					// ニュートラルモーション
+		pEnemy->motionType = CPlayer::ANIME_NORMAL;					// ニュートラルモーション
 		pEnemy->motionTypeOld = pEnemy->motionType;			// 前回のモーション
 		pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
 		pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
@@ -340,7 +347,7 @@ void Collision(void)
 //-------------------------------
 //モーションをロードする処理
 //-------------------------------
-void  Loadmotion(MODELDATAPLAYER* set, int Setnumber)
+void  Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber)
 {
 	s_ModelData[s_nMotion] = *set;
 	s_nMotion++;
@@ -368,13 +375,13 @@ void SetCopy(void)
 
 		switch (pEnemy->copy)
 		{
-		case COPY_SWORD:
+		case CPlayer::COPY_SWORD:
 			break;
-		case COPY_FIRE:
+		case CPlayer::COPY_FIRE:
 			break;
-		case COPY_LASER:
+		case CPlayer::COPY_LASER:
 			break;
-		case COPY_CUTTER:
+		case CPlayer::COPY_CUTTER:
 			break;
 		default:
 			break;
@@ -527,7 +534,7 @@ void LoadEnemy(void)
 			pEnemy->modelMin = D3DXVECTOR3(FLT_MAX, FLT_MAX, FLT_MAX);		// 頂点座標の最小値
 			pEnemy->modelMax = D3DXVECTOR3(-FLT_MAX, -FLT_MAX, -FLT_MAX);	// 頂点座標の最大値
 			pEnemy->mtxWorld = {};								// ワールドマトリックス
-			pEnemy->motionType = ANIME_NORMAL;					// ニュートラルモーション
+			pEnemy->motionType = CPlayer::ANIME_NORMAL;					// ニュートラルモーション
 			pEnemy->motionTypeOld = pEnemy->motionType;			// ニュートラルモーション
 			pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
 			pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
