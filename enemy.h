@@ -14,14 +14,7 @@
 //------------------------------------
 // マクロ
 //------------------------------------
-#define Attenuation	(0.5f)		//減衰係数
-#define Speed	(1.0f)			//スピード
-#define WIDTH (10.0f)			//モデルの半径
-#define MAX_PRAYER (16)			//最大数
-#define MAX_MOVE (9)			//アニメーションの最大数
-#define INVINCIBLE (300)		//無敵時間
 #define MAX_MODELPARTS (9)
-#define MAX_COPY  (4)
 
 //------------------------------------
 // 種別の列挙型
@@ -63,29 +56,28 @@ typedef struct
 	D3DXVECTOR3 scale;
 	D3DXMATRIX	mtxWorld;					// マトリックス//ポリゴンの位置や回転行列すべてをつめてるナニカ
 
-	STATUS		status;						// 今のステータス
-	DAMEGE		damege;						// ダメージくらってるかくらってないか
-	COPY		copy;						// コピー
+	CPlayer::STATUS		status;						// 今のステータス
+	CPlayer::DAMEGE		damege;						// ダメージくらってるかくらってないか
+	CPlayer::COPY		copy;						// コピー
 	ENEMY_TYPE	type;						// エネミーのタイプ
 
 	Parts		parts[MAX_MODELPARTS];		// モデルパーツ
 	PartsFile	partsFile[MAX_MODELPARTS];	// パーツファイル
-	MyMotion	motion[ANIME_MAX];			// モーション
-	ANIME		motionType;					// モーションタイプ(現在)
-	ANIME		motionTypeOld;				// モーションタイプ(過去)
+	MyMotion	motion[CPlayer::ANIME_MAX];			// モーション
+	CPlayer::ANIME		motionType;					// モーションタイプ(現在)
+	CPlayer::ANIME		motionTypeOld;				// モーションタイプ(過去)
 	int			nMaxModelType;				// モデルのタイプ数
 	int			nMaxModelParts;				// 扱うモデルパーツ数
 	int			nMaxMotion;					// モーション数
 
-	int			shadow;						// 影番号
-	int			invincible;					// 無敵時間
-	float		consumption;				// 計算用
-	float		log;
+	int			nInvincible;				// 無敵時間
+	float		fConsumption;				// 計算用
+	float		fLog;
 	
 	bool		bMotionBlend;				// モーションブレンド
 	bool		bMotion;					// モーションを使用状況
 
-	bool        bSelect;
+	bool		bSelect;
 	bool		isUse;						// 使ってるか使ってないか
 	bool		notLoop;					// ループするかしないか
 }Enemy;
@@ -99,7 +91,7 @@ void DrawEnemy(void);	// 描画
 void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type);//セット引数座標と読み込むファイル名
 void SizeSet(void);//当たり判定取得
 Enemy *GetEnemy(void);//ゲット
-MODELDATAPLAYER *GetModelDataEnemy(void);//motionデータのゲット
+CPlayer::MODELDATAPLAYER *GetModelDataEnemy(void);//motionデータのゲット
 void LoadEnemy(void);	// 読込
 void LoadSetFile(char *Filename);
 void OutputEnemy(char *Filename);

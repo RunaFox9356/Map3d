@@ -16,30 +16,37 @@
 #include "motion.h"
 #include "map.h"
 #include "comn.h"
+
 //--------------------------------------------------
 // マクロ定義
-//--------------------------------------------------
 #define MAX_ENEMY	(100)	// 最大エネミー数
 #define SIZE_ENEMY (D3DXVECTOR3(50.0f,50.0f,0.0f))
+//#define ATTENUATION	(0.5f)		//減衰係数
+//#define SPEED	(1.0f)			//スピード
+#define WIDTH (10.0f)			//モデルの半径
+#define MAX_PRAYER (16)			//最大数
+#define MAX_MOVE (9)			//アニメーションの最大数
+#define INVINCIBLE (300)		//無敵時間
+
 //--------------------------------------------------
 // 静的変数
 //--------------------------------------------------
 static Enemy s_Enemy[MAX_ENEMY];		// エネミーの構造体
 static Enemy s_EnemyType[ENEMY_TYPE_MAX];	// エネミー種別の構造体
-static MODELDATAPLAYER s_ModelData[MAX_MOVE];
+static CPlayer::MODELDATAPLAYER s_ModelData[MAX_MOVE];
 
 static float s_fMapScale;
-static float fLog;
+static float s_fLog;
 static D3DXVECTOR3 s_Move(5.0f, 0.0f, 0.0f);
 
 static int s_parts;	// パーツの最大数
 static int s_pow;	// ジャンプパワー
-static int nMotion; //
+static int s_nMotion; //
 
 //--------------------------------------------------
 // プロトタイプ宣言
 //--------------------------------------------------
-static void Loadmotion(MODELDATAPLAYER* set, int Setnumber);	// モーションの読込
+static void Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber);	// モーションの読込
 static void AnimationSet(int animation);						// アニメーションの計算
 static void MoveSet(void);										// ムーブセット
 static void Collision(void);									// 当たり判定まとめ
@@ -61,10 +68,7 @@ void InitEnemy(void)
 	// 読込
 	LoadEnemy();
 
-	// エネミーの設置
-	//SetEnemy(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_HUMANSOUL);
-	//SetEnemy(D3DXVECTOR3(20.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), ENEMY_TYPE_SKELETON);
-	fLog = 0.0f;
+	s_fLog = 0.0f;
 	s_fMapScale = 1.0f;
 }
 
@@ -73,7 +77,6 @@ void InitEnemy(void)
 //=========================================
 void UninitEnemy(void)
 {
-
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
@@ -114,7 +117,7 @@ void UpdateEnemy(void)
 
 		if (!pEnemy->bMotion)
 		{// 使用してるモーションがない場合
-			pEnemy->motionType = ANIME_NORMAL;
+			pEnemy->motionType = CPlayer::ANIME_NORMAL;
 		}
 
 		// マップのスクロール
@@ -131,13 +134,12 @@ void UpdateEnemy(void)
 			}
 		}
 
-
 		//Collision();	// 床
 
-						// アニメーションや足音の設定
+		// アニメーションや足音の設定
 		if (!pEnemy->notLoop)
 		{
-			pEnemy->motionType = ANIME_NORMAL;
+			pEnemy->motionType = CPlayer::ANIME_NORMAL;
 		}
 
 		if (s_pow >= 1 && s_pow <= 10)
@@ -149,7 +151,7 @@ void UpdateEnemy(void)
 		pEnemy->move.y -= 1.0f;
 		if (GetKeyboardPress(DIK_B))
 		{
-			pEnemy->motionType = ANIME_ATTACK;//攻撃
+			pEnemy->motionType = CPlayer::ANIME_ATTACK;//攻撃
 
 			pEnemy->notLoop = true;
 		}
@@ -185,12 +187,12 @@ void UpdateEnemy(void)
 		int wheel = GetMouseWheel();
 		if (wheel > 0)
 		{	
-			fLog += s_Move.x * MAPMOVE / s_fMapScale;
+			s_fLog += s_Move.x * MAPMOVE / s_fMapScale;
 
 		}
 		else if (wheel < 0)
 		{
-			fLog -= s_Move.x * MAPMOVE / s_fMapScale;
+			s_fLog -= s_Move.x * MAPMOVE / s_fMapScale;
 		}
 	}
 	
@@ -277,14 +279,13 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->pos = pos;									// 位置の初期化
 		pEnemy->posOld = pEnemy->pos;						// 過去位置の初期化
 		pEnemy->rot = rot;									// 向きの初期化
-		pEnemy->log = fLog;
+		pEnemy->fLog = s_fLog;
 		pEnemy->mtxWorld = {};								// ワールドマトリックス
-		pEnemy->motionType = ANIME_NORMAL;					// ニュートラルモーション
+		pEnemy->motionType = CPlayer::ANIME_NORMAL;					// ニュートラルモーション
 		pEnemy->motionTypeOld = pEnemy->motionType;			// 前回のモーション
 		pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
 		pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
 		pEnemy->isUse = true;								// 使用状況
-		
 
 		break;
 	}
@@ -311,8 +312,6 @@ void AnimationSet(int animation)
 //-------------------------------
 void MoveSet(void)
 {
-
-
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
@@ -321,16 +320,9 @@ void MoveSet(void)
 		{
 			continue;
 		}
-
-
-		//	bool bHit = cLnhale[0].Hit(pEnemy->pos, SIZE_ENEMY);
-
-		/*if (bHit)
-		{
-		pEnemy->isUse = false;
-		}*/
 	}
 }
+
 //-------------------------------
 //当たり判定まとめ
 //-------------------------------
@@ -355,10 +347,10 @@ void Collision(void)
 //-------------------------------
 //モーションをロードする処理
 //-------------------------------
-void  Loadmotion(MODELDATAPLAYER* set, int Setnumber)
+void  Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber)
 {
-	s_ModelData[nMotion] = *set;
-	nMotion++;
+	s_ModelData[s_nMotion] = *set;
+	s_nMotion++;
 }
 
 //-------------------------------
@@ -375,7 +367,7 @@ void SetCopy(void)
 			continue;
 		}
 
-		nMotion = 0;
+		s_nMotion = 0;
 		if (s_parts >= 8)
 		{
 			s_parts = 7;
@@ -383,13 +375,13 @@ void SetCopy(void)
 
 		switch (pEnemy->copy)
 		{
-		case COPY_SWORD:
+		case CPlayer::COPY_SWORD:
 			break;
-		case COPY_FIRE:
+		case CPlayer::COPY_FIRE:
 			break;
-		case COPY_LASER:
+		case CPlayer::COPY_LASER:
 			break;
-		case COPY_CUTTER:
+		case CPlayer::COPY_CUTTER:
 			break;
 		default:
 			break;
@@ -405,10 +397,12 @@ Enemy *GetEnemy(void)
 	return s_Enemy;
 }
 
+//----------------------
+// 読込
+//----------------------
 void LoadSetFile(char *Filename)
 {
 	FILE *pFile = fopen(Filename, "r");
-
 	if (pFile == NULL)
 	{//ファイルが開いた場合
 		assert(false);
@@ -419,9 +413,7 @@ void LoadSetFile(char *Filename)
 	D3DXVECTOR3 rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// ロット
 	char aString[128] = {};			// 文字列比較用の変数
 	char aEqual[128] = {};		// ＝読み込み用変数
-//	char fileName[ENEMY_TYPE_MAX][128];
 	int nType = 0;
-
 	fscanf(pFile, "%s", &aString);
 
 	while (strncmp(&aString[0], "SCRIPT", 6) != 0)
@@ -486,8 +478,8 @@ void LoadSetFile(char *Filename)
 			}
 		}
 	}
-
 }
+
 //----------------------
 // 読込
 //----------------------
@@ -537,12 +529,12 @@ void LoadEnemy(void)
 			// プレイヤー情報の初期化
 			pEnemy->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 位置の初期化
 			pEnemy->posOld = pEnemy->pos;					// 過去位置の初期化
-			s_Enemy->log = fLog;
+			pEnemy->fLog = s_fLog;
 			pEnemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);;	// 向きの初期化
 			pEnemy->modelMin = D3DXVECTOR3(FLT_MAX, FLT_MAX, FLT_MAX);		// 頂点座標の最小値
 			pEnemy->modelMax = D3DXVECTOR3(-FLT_MAX, -FLT_MAX, -FLT_MAX);	// 頂点座標の最大値
 			pEnemy->mtxWorld = {};								// ワールドマトリックス
-			pEnemy->motionType = ANIME_NORMAL;					// ニュートラルモーション
+			pEnemy->motionType = CPlayer::ANIME_NORMAL;					// ニュートラルモーション
 			pEnemy->motionTypeOld = pEnemy->motionType;			// ニュートラルモーション
 			pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
 			pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
@@ -658,7 +650,7 @@ void LoadEnemy(void)
 	}
 }
 //----------------------------
-//ファイルの出力マップ情報改造
+//ファイルの入力マップ情報
 //----------------------------
 void OutputEnemy(char *Filename)
 {
@@ -684,10 +676,10 @@ void OutputEnemy(char *Filename)
 		
 		if (s_Enemy[nCntEnemy].isUse)
 		{
-			
+			//s_Enemy[nCntEnemy].pos.y += Log;
 			fprintf(pFile, "SET_ENEMY\n");
 			fprintf(pFile, "TYPE = %d\n", s_Enemy[nCntEnemy].type);
-			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x - fLog, s_Enemy[nCntEnemy].pos.y, s_Enemy[nCntEnemy].pos.z);
+			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x - s_fLog, s_Enemy[nCntEnemy].pos.y, s_Enemy[nCntEnemy].pos.z);
 			fprintf(pFile, "SIZE = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].scale.x, s_Enemy[nCntEnemy].scale.y, s_Enemy[nCntEnemy].scale.z);
 			fprintf(pFile, "ROT = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].rot.x, s_Enemy[nCntEnemy].rot.y, s_Enemy[nCntEnemy].rot.z);
 			fprintf(pFile, "END_SET\n");

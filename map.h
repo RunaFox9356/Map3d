@@ -4,12 +4,12 @@
 // Author:hamada ryuuga
 //
 //============================
-
 #ifndef _MAP_H_
 #define _MAP_H_
 
 #include"main.h"
 
+// ファイル名
 #define MAP_FILE0	"Data/txt/map.txt"
 #define MAP_FILE1	"Data/txt/map1.txt"
 #define MAP_FILE2	"Data/txt/map2.txt"
@@ -17,6 +17,7 @@
 #define MAP_FILE4	"Data/txt/map4.txt"
 #define MAP_FILE5	"Data/txt/map5.txt"
 #define MAP_FILE6	"Data/txt/map6.txt"
+
 // マクロ定義
 #define NUM_MAP	    (2048)		//背景枚数
 #define X_MAP		(8)		//マップチップサイズX
@@ -50,14 +51,14 @@ void UpdateMap(void);
 void DrawMap(void);
 void SetMap(D3DXVECTOR3 pos, int nType, int tex);
 void InitMapSet(char *Filename);					//読み込み
-void ConversionMap (D3DXVECTOR3 pos,int tex);//マップチップ変更処理
+void ConversionMap (D3DXVECTOR3 pos,int tex);
 void OutputMap(char *Filename);
-void SizeMap(float SIZ);
+void SizeMap(float fSize);
 Map *GetMap(void);
-bool CollisionMap(D3DXVECTOR3 pos);					//当たり判定
-void ConteSet(int stage);							//コンテ
-void PasSetMap(char *Filename);						//マップパスをセットする
-int SopiteMap(D3DXVECTOR3 pos);						
+bool CollisionMap(D3DXVECTOR3 pos);//当たり判定
+void ConteSet(int nStage);			//コンテ
+void PasSetMap(char *Filename);//マップパスをセットする
+int SopiteMap(D3DXVECTOR3 pos);
 void FalseSetMap(void);								//マップ削除
 D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos);				//エネミをマップの上に置く処理
 #endif // !_Map_H_

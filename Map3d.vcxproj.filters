@@ -60,6 +60,12 @@
     <ClCompile Include="light.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="debug.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="process.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="imgui\imgui_demo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
@@ -125,8 +131,14 @@
     <ClInclude Include="light.h">
       <Filter>ソース ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="process.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="resource1.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imgui.h">
       <Filter>imgui</Filter>

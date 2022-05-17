@@ -7,6 +7,7 @@
 #include "map.h"
 #include "input.h"
 #include "enemy.h"
+#include "process.h"
 #include <stdio.h>
 
 //スタティック変数
@@ -18,16 +19,13 @@ static D3DXVECTOR3 s_PosOffset;
 static float s_fMapScale;
 static int stage = 0;
 
-
 //================
 //初期化処理
 //================
 void InitMap(void)
 {
-	LPDIRECT3DDEVICE9  pDevice;
-
 	//デバイスの取得
-	pDevice = GetDevice();
+	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
 	//テクスチャの読み込み
 	D3DXCreateTextureFromFile(pDevice,
@@ -103,7 +101,7 @@ void UpdateMap(void)
 	else
 	{
 		// マップのスクロール
-		if (!GetKeyboardPress(DIK_LCONTROL)&&!GetKeyboardPress(DIK_LSHIFT))
+		if (!GetKeyboardPress(DIK_LCONTROL) && !GetKeyboardPress(DIK_LSHIFT))
 		{
 			int wheel = GetMouseWheel();
 			if (wheel > 0)
@@ -133,11 +131,7 @@ void UpdateMap(void)
 
 		pos = (s_aMap[i].pos + s_PosOffset)* s_fMapScale ;
 	
-		SetNormalpos2d(pVtx,
-			pos.x,
-			pos.x + BLOCKSIZEX * s_fMapScale,
-			pos.y,
-			pos.y + BLOCKSIZEY * s_fMapScale);
+		SetNormalpos2d(pVtx, pos.x, pos.x + BLOCKSIZEX * s_fMapScale, pos.y, pos.y + BLOCKSIZEY * s_fMapScale);
 
 		if (!IsDebug())
 		{
@@ -161,7 +155,6 @@ void DrawMap(void)
 	{
 		for (int i = 0; i < NUM_MAP; i++)
 		{
-
 			if (!s_aMap[i].bUse)
 			{
 				
@@ -173,12 +166,11 @@ void DrawMap(void)
 			//デバイスのポインタ
 			LPDIRECT3DDEVICE9 pDevice = GetDevice();
 
-
 			//頂点バッファをデータストリームに設定
 			pDevice->SetStreamSource(0, s_pVtxBuffMap, 0, sizeof(VERTEX_2D));
 			//頂点フォーマットの設定
 			pDevice->SetFVF(FVF_VERTEX_2D);
-			
+			//テクスチャの設定
 		
 			//テクスチャの設定
 			pDevice->SetTexture(0, s_pTextureMap);
@@ -187,16 +179,10 @@ void DrawMap(void)
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);//大きいの縮小
 
-			pDevice->DrawPrimitive(
-				D3DPT_TRIANGLESTRIP,
-				4 * i,
-				2);
+			pDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, 4 * i, 2);
 
 			pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);//小さいの拡大
 			pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);//大きいの縮小
-
-		
-
 		}
 	}
 }
@@ -209,9 +195,9 @@ void SetMap(D3DXVECTOR3 pos, int nType,int tex)
 	VERTEX_2D *pVtx; //頂点へのポインタ
 	s_pVtxBuffMap->Lock(0, 0, (void**)&pVtx, 0);
 	s_PosOffset.x = 0.0f;
-	Map* pMap = s_aMap;
-	for (int i = 0; i < NUM_MAP; i++, pVtx += 4, pMap++)
+	for (int i = 0; i < NUM_MAP; i++, pVtx += 4)
 	{ 
+		Map* pMap = &s_aMap[i];
 		if (pMap->bUse)
 		{
 			continue;
@@ -272,7 +258,7 @@ void InitMapSet(char *Filename)
 	{
 		for (int nCntX = 0; nCntX < MAP_SIZEX; nCntX++)
 		{//Mapの書き込み
-			SetMap(D3DXVECTOR3(BLOCKSIZEX*nCntX, ((BLOCKSIZEY*(nCntY)) ), 0.0f), 1, aMap[nCntY][nCntX]);
+			SetMap(D3DXVECTOR3(BLOCKSIZEX * nCntX, BLOCKSIZEY * nCntY, 0.0f), 1, aMap[nCntY][nCntX]);
 		}
 	}
 }
@@ -322,7 +308,7 @@ void ConversionMap(D3DXVECTOR3 pos ,int tex)
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
 			s_aMap[i].tex = tex;
-			
+
 			int X = (s_aMap[i].tex % X_MAP);
 			int Y = (s_aMap[i].tex / X_MAP);
 
@@ -339,7 +325,7 @@ void ConversionMap(D3DXVECTOR3 pos ,int tex)
 //==================
 bool CollisionMap(D3DXVECTOR3 pos)
 {
-	bool Hit = false;//チップとマウスの当たり判定が当たってる時
+	bool isHit = false;//チップとマウスの当たり判定が当たってる時
 	D3DXVECTOR3 mapPos;
 
 	for (int i = 0; i < NUM_MAP; i++)
@@ -354,20 +340,19 @@ bool CollisionMap(D3DXVECTOR3 pos)
 		if (((mapPos.x < pos.x) && (mapPos.x + BLOCKSIZEX * s_fMapScale > pos.x)) &&
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
-			
-			Hit = true;
+			isHit = true;
 		}
 	}
-	return Hit;
+	return isHit;
 }
 
 
 //==================
 //サイズ変更
 //==================
-void SizeMap(float SIZ)
+void SizeMap(float fSize)
 {
-	s_fMapScale = 1.0f / SIZ;
+	s_fMapScale = 1.0f / fSize;
 }
 
 //==================
@@ -381,15 +366,14 @@ Map *GetMap(void)
 //==================
 //コンテ処理
 //==================
-void ConteSet(int stage)
+void ConteSet(int nStage)
 {
 	LoadSetFile("Data/teki001.txt");
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();
 	FalseSetMap();
-	InitMapSet(&s_aMap[stage].filename[0]);
-
+	InitMapSet(s_aMap[nStage].filename);
 }
 
 //==================
@@ -400,7 +384,7 @@ void PasSetMap(char *Filename)
 	//ファイルを開く
 	Enemy *Enemy = GetEnemy();
 	FILE *pFile = fopen(&Filename[0], "r");
-	char	s_aString[256];//ファイルの文字入れる
+	char s_aString[256];//ファイルの文字入れる
 	if (pFile != NULL)
 	{//ファイルが開いた場合
 		fscanf(pFile, "%s", &s_aString);
@@ -408,23 +392,23 @@ void PasSetMap(char *Filename)
 		while (strncmp(&s_aString[0], "SCRIPT", 6) != 0)
 		{//スタート来るまで空白読み込む
 			s_aString[0] = {};
-			fscanf(pFile, "%s", &s_aString[0]);
+			fscanf(pFile, "%s", s_aString);
 		}
 		int number = 0;
-		while (strncmp(&s_aString[0], "END_SCRIPT", 10) != 0)
+		while (strncmp(s_aString, "END_SCRIPT", 10) != 0)
 		{// 文字列の初期化と読み込み// 文字列の初期化と読み込み
-			fscanf(pFile, "%s", &s_aString[0]);
+			fscanf(pFile, "%s", s_aString);
 
-			if (strcmp(&s_aString[0], "MAPLYNK") == 0)
+			if (strcmp(s_aString, "MAPLYNK") == 0)
 			{
-				fscanf(pFile, "%s", &s_aString[0]);//＝読み込むやつ
-				fscanf(pFile, "%s", &s_aMap[number].filename[0]);
+				fscanf(pFile, "%s", s_aString);//＝読み込むやつ
+				fscanf(pFile, "%s", s_aMap[number].filename);
 				number++;
 			}
-			if (strcmp(&s_aString[0], "ENEMYLYNK") == 0)
+			if (strcmp(s_aString, "ENEMYLYNK") == 0)
 			{
-				fscanf(pFile, "%s", &s_aString[0]);//＝読み込むやつ
-				fscanf(pFile, "%s", &s_aString[0]);
+				fscanf(pFile, "%s", s_aString);//＝読み込むやつ
+				fscanf(pFile, "%s", s_aString);
 				
 			}
 		}
@@ -482,7 +466,7 @@ D3DXVECTOR3 EnemyMap(D3DXVECTOR3 pos)
 		if (((mapPos.x < pos.x) && (mapPos.x + BLOCKSIZEX * s_fMapScale > pos.x)) &&
 			((mapPos.y < pos.y) && (mapPos.y + BLOCKSIZEY * s_fMapScale > pos.y)))
 		{
-			Pos.x = mapPos.x+ BLOCKSIZEX/2;
+			Pos.x = mapPos.x+ BLOCKSIZEX * 0.5f;
 			Pos.y = mapPos.y+ BLOCKSIZEY;
 		}
 	}
