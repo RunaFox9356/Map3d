@@ -14,14 +14,13 @@
 //------------------------------------
 // static変数
 //------------------------------------
-#define ATTENUATION (0.5f)	//減衰係数
-#define SPEED (1.0f)		//スピード
-static const float WIDTH = 10.0f;		//モデルの半径
-static const int MAX_PRAYER = 16;		//最大数
-static const int MAX_MOVE = 9;			//アニメーションの最大数
-static const int INVINCIBLE = 300;		//無敵時間
-static const int MAX_MODELPARTS = 9;
-static const int MAX_COPY = 4;
+const float CPlayer::ATTENUATION = 0.5f;
+const float CPlayer::SPEED = 1.0f;
+const float CPlayer::WIDTH = 10.0f;		//モデルの半径
+const int CPlayer::MAX_PRAYER = 16;		//最大数
+const int CPlayer::MAX_MOVE = 9;			//アニメーションの最大数
+const int CPlayer::INVINCIBLE = 300;		//無敵時間
+const int CPlayer::MAX_COPY = 4;
 
 //------------------------------------
 // コンストラクタ
@@ -54,7 +53,7 @@ CPlayer::CPlayer() :
 	m_bMotion(false),
 	m_isUse(false),
 	m_notLoop(false),
-	//m_aFirename({}),
+	//m_aFirename(),
 	m_time(0),
 	m_nparts(0),
 	m_pow(0),
@@ -182,9 +181,7 @@ void CPlayer::Update(void)
 	{
 		m_copy = COPY_FIRE;
 		// ファイルの読み込み
-		SetCopy("Data/system/Gon/flare.txt", &m_partsFile[7], 
-					&m_parts[7], &m_motion[0],
-					&m_nMaxModelParts);
+		SetCopy("Data/system/Gon/flare.txt", &m_partsFile[7], &m_parts[7], &m_motion[0], &m_nMaxModelParts);
 	}
 	if (GetKeyboardPress(DIK_F))
 	{
@@ -507,7 +504,7 @@ void CPlayer::MoveSet(void)
 	}
 
 	//減算設定（感性）
-	m_rot.y += (m_consumption)* ATTENUATION;//目的の値-現在の値）＊減衰係数
+	m_rot.y += m_consumption * ATTENUATION;//目的の値-現在の値）＊減衰係数
 
 	//正規化
 	if (m_rot.y > D3DX_PI)

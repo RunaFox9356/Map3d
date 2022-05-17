@@ -86,7 +86,7 @@ public:
 
 private:
 	void Collision(void);	// 当たり判定まとめ
-	void MoveSet(void);	//ムーブセット
+	void MoveSet(void);		//ムーブセット
 
 private:
 
