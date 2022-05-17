@@ -10,119 +10,124 @@
 #include "main.h"
 #include "motion.h"
 
-//------------------------------------
-// マクロ
-//------------------------------------
-
-#define ATTENUATION	(0.5f)		//減衰係数
-#define SPEED	(1.0f)			//スピード
-#define WIDTH (10.0f)			//モデルの半径
-#define MAX_PRAYER (16)			//最大数
-#define MAX_MOVE (9)			//アニメーションの最大数
-#define INVINCIBLE (300)		//無敵時間
-#define MAX_MODELPARTS (9)
-//#define MAX_KEY  (6)
-#define MAX_COPY  (4)
-
-typedef enum
+class CPlayer
 {
-	ANIME_NORMAL = 0,	//ニュートラル
-	ANIME_RUN,			//歩き
-	ANIME_ATTACK,		//攻撃
-	ANIME_JUMP,			//ジャンプ
-	ANIME_LANDING,		//着地
-	ANIME_MAX
-}ANIME;
+public:
+	typedef enum
+	{
+		ANIME_NORMAL = 0,	//ニュートラル
+		ANIME_RUN,			//歩き
+		ANIME_ATTACK,		//攻撃
+		ANIME_JUMP,			//ジャンプ
+		ANIME_LANDING,		//着地
+		ANIME_MAX
+	}ANIME;
 
+	typedef enum
+	{
+		STATUS_NORMAL = 0,	//ニュートラル
+		STATUS_RUN,			//歩き
+		STATUS_ATTACK,		//攻撃
+		STATUS_JUMPUP,		//ジャンプ
+		STATUS_JUMPDOWN,	//ジャンプ
+		STATUS_LANDING,		//着地
+		STATUS_MAX
+	}STATUS;
 
-typedef enum
-{
-	STATUS_NORMAL = 0,	//ニュートラル
-	STATUS_RUN,		//歩き
-	STATUS_ATTACK,	//攻撃
-	STATUS_JUMPUP,		//ジャンプ
-	STATUS_JUMPDOWN,		//ジャンプ
-	STATUS_LANDING,	//着地
-	STATUS_MAX
-}STATUS;
+	typedef enum
+	{
+		DAMEGE_NORMAL = 0,	//ニュートラル
+		DAMEGE_NOU,			//ダメージくらってる
+		DAMEGE_MAX
+	}DAMEGE;
 
-typedef enum
-{
-	DAMEGE_NORMAL = 0,	//ニュートラル
-	DAMEGE_NOU,			//ダメージくらってる
-	DAMEGE_MAX
-}DAMEGE;
+	typedef enum
+	{
+		COPY_NORMAL = 0,	//ニュートラル
+		COPY_SWORD,			//ソード
+		COPY_FIRE,			//ファイア
+		COPY_LASER,			//レーザー
+		COPY_CUTTER,		//カッター
+		COPY_MAX
+	}COPY;
 
-typedef enum
-{
-	COPY_NORMAL = 0,//ニュートラル
-	COPY_SWORD,		//ソード
-	COPY_FIRE,		//ファイア
-	COPY_LASER,		//レーザー
-	COPY_CUTTER,	//カッター
-	COPY_MAX
-}COPY;
+	//modelデータの構造体//
+	typedef struct
+	{
+		int key;		// 時間管理
+		int nowKey;		// 今のキー
+		int loop;		// ループするかどうか[0:ループしない / 1 : ループする]
+		int num_key;  	// キー数
+		MyKeySet KeySet[MAX_KEY];
+	}MODELDATAPLAYER;
 
-//modelデータの構造体//
-typedef struct
-{
-	int key;		// 時間管理
-	int nowKey;		// 今のキー
-	int loop;		// ループするかどうか[0:ループしない / 1 : ループする]
-	int num_key;  	// キー数
-	MyKeySet KeySet[MAX_KEY];
-}MODELDATAPLAYER;
+public:
+	static const float ATTENUATION;		//減衰係数
+	static const float SPEED;			//スピード
+	static const float WIDTH;			//モデルの半径
+	static const int MAX_PRAYER;		//最大数
+	static const int MAX_MOVE;			//アニメーションの最大数
+	static const int INVINCIBLE;		//無敵時間
+	static const int MAX_MODELPARTS = 9;
+	static const int MAX_COPY;
 
-typedef struct
-{
-	D3DXVECTOR3		pos;						// 位置
-	D3DXVECTOR3		posOld;						// 位置過去
-	D3DXVECTOR3		move;						// ムーブ
-	D3DXVECTOR3		rot;						// 回転	
-	D3DXVECTOR3		rotMove;					// 回転ムーブ
-	D3DXVECTOR3		modelMin;					// サイズ最小
-	D3DXVECTOR3		modelMax;					// サイズ最大
-	D3DXMATRIX		mtxWorld;					// マトリックス//ポリゴンの位置や回転行列すべてをつめてるナニカ
+public:
+	CPlayer();
+	~CPlayer();
 
-	STATUS			status;						// 今のステータス
-	DAMEGE			damege;						// ダメージくらってるかくらってないか
-	COPY			copy;						// コピー
+	void Init(void);	//初期化
+	void Uninit(void);	//破棄
+	void Update(void);	//更新
+	void Draw(void);	//描画
 
-	Parts			parts[MAX_MODELPARTS];		// モデルパーツ
-	PartsFile		partsFile[MAX_MODELPARTS];	// パーツファイル
-	MyMotion		motion[ANIME_MAX];			// モーション
-	ANIME			motionType;					// モーションタイプ(現在)
-	ANIME			motionTypeOld;				// モーションタイプ(過去)
-	int				nMaxModelType;				// モデルのタイプ数
-	int				nMaxModelParts;				// 扱うモデルパーツ数
-	int				nMaxMotion;					// モーション数
+	void Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot);//セット引数座標と読み込むファイル名
 
-	int				type;						// タイプ
-	int				shadow;						// 影番号
-	int				invincible;					// 無敵時間
-	float			consumption;				// 計算用
+	void SetCopy(char *pFileName, PartsFile *partsFile, Parts *parts, MyMotion *Motion, int *nMaxParts);
 
-	bool			bMotionBlend;				// モーションブレンド
-	bool			bMotion;					// モーションを使用状況
+private:
+	void Collision(void);	// 当たり判定まとめ
+	void MoveSet(void);	//ムーブセット
 
-	bool			isUse;						// 使ってるか使ってないか
-	bool			notLoop;					// ループするかしないか
+private:
 
-	 char			aFirename[256];//
-}PLAYER;
+	D3DXVECTOR3		m_pos;						// 位置
+	D3DXVECTOR3		m_posOld;					// 位置過去
+	D3DXVECTOR3		m_move;						// ムーブ
+	D3DXVECTOR3		m_rot;						// 回転	
+	D3DXVECTOR3		m_rotMove;					// 回転ムーブ
+	D3DXVECTOR3		m_modelMin;					// サイズ最小
+	D3DXVECTOR3		m_modelMax;					// サイズ最大
+	D3DXMATRIX		m_mtxWorld;					// マトリックス//ポリゴンの位置や回転行列すべてをつめてるナニカ
 
+	STATUS			m_status;					// 今のステータス
+	DAMEGE			m_damege;					// ダメージくらってるかくらってないか
+	COPY			m_copy;						// コピー
 
+	Parts			m_parts[MAX_MODELPARTS];		// モデルパーツ
+	PartsFile		m_partsFile[MAX_MODELPARTS];	// パーツファイル
+	MyMotion		m_motion[ANIME_MAX];			// モーション
+	ANIME			m_motionType;					// モーションタイプ(現在)
+	ANIME			m_motionTypeOld;				// モーションタイプ(過去)
+	int				m_nMaxModelType;				// モデルのタイプ数
+	int				m_nMaxModelParts;				// 扱うモデルパーツ数
+	int				m_nMaxMotion;					// モーション数
 
-//プロトタイプ宣言
-void InitPlayer(void);//初期化
-void UninitPlayer(void);//破棄
-void UpdatePlayer(void);//更新
-void DrawPlayer(void);//描画
+	int				m_type;						// タイプ
+	int				m_shadow;					// 影番号
+	int				m_invincible;				// 無敵時間
+	float			m_consumption;				// 計算用
 
-void SetPlayer(D3DXVECTOR3 pos, D3DXVECTOR3 rot);//セット引数座標と読み込むファイル名
+	bool			m_bMotionBlend;				// モーションブレンド
+	bool			m_bMotion;					// モーションを使用状況
 
-void MoveSet(void);	//ムーブセット
-void Collision(void);	//当たり判定まとめ
-void SetCopy(char *pFileName, PartsFile *partsFile, Parts *parts, MyMotion *Motion, int *nMaxParts);
-PLAYER *GetPlayer(void);
+	bool			m_isUse;					// 使ってるか使ってないか
+	bool			m_notLoop;					// ループするかしないか
+
+	char			m_aFirename[256];//
+
+	int				m_time;		// タイムの最大数
+	int				m_nparts;	// パーツの最大数
+	int				m_pow;		// ジャンプパワー
+	int				m_nMotion;	// 
+};
 #endif
