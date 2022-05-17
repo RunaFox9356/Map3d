@@ -1,5 +1,5 @@
 //=================================================
-//	アクションゲーム制作
+//	おもちゃ
 //
 //  Auther： hamadaryuuga
 //=================================================
@@ -8,6 +8,11 @@
 #include "main.h"
 #include "input.h"
 #include "bg.h"
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
+#include <d3d9.h>
+#include <tchar.h>
 #include "enemy.h"
 #include "map.h"
 #include "Pallet.h"
@@ -18,15 +23,25 @@
 #include "player.h"
 #include "light.h"
 #include "comn.h"
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui_internal.h>
+
 #define MAX_NAME (7)
 
 
 //グローバル変数(必須)
 LPDIRECT3D9 g_pD3D = NULL; //Direct3dオブジェクトへのポインタ
 LPDIRECT3DDEVICE9 g_pD3DDevice = NULL; //Direct3dデバイスへのぽいんた
+
+D3DPRESENT_PARAMETERS    g_d3dpp = {};
+
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 MODE g_mode = MODE_TITLE;//モード
 LPD3DXFONT g_pFont = NULL; //フォントのポインタ
 int g_nCountFPS;
+
 int g_nUseWireFrame;
 int DebugNumber;
 int DebugNumberEnemy;
@@ -37,12 +52,21 @@ bool bLine;//lineモード
 bool press = false;
 bool EnemyMode = false;//MapいじるかEnemyいじるか
 bool EnemyAlignment = false;//マップのマス目基準にするかしないか
+
+bool show_demo_window = true;//基本の呼び出し
+bool show_another_window = false;//もう一つ呼び出し
+static char Txet[8] = "";
+
 void EnemySetSystem(D3DXVECTOR3 Mouse);//Enemyの挙動
 void MapSetSystem(D3DXVECTOR3 Mouse);//マップの挙動
-
- //===================
- //メイン関数
- //===================
+void ResetDevice();
+bool ImGuiTxet(bool show_demo_window, bool show_another_window);
+int Botan(int nSize);
+// Forward declare message handler from imgui_impl_win32.cpp
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+//===================
+//メイン関数
+//===================
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine, int nCmdShow)
 {
 	HWND hWnd;	//Windowハンドル識別子
@@ -98,9 +122,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 		return -1;
 	}
 
-	//Windowm表示
-	ShowWindow(hWnd, nCmdShow);
-	UpdateWindow(hWnd);
+	// Show the window
+	::ShowWindow(hWnd, SW_SHOWDEFAULT);
+	::UpdateWindow(hWnd);
+
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\meiryo.ttc", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsClassic();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX9_Init(g_pD3DDevice);
+
 
 	//分解能の設定
 	timeBeginPeriod(1);
@@ -111,9 +152,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 	dwFrameCount = 0;
 	dwFPSLastTime = timeGetTime();
 
+
+
+
 	//メッセージループ
 	while (1)
 	{
+
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != 0)
 		{//windowsの処理
 			if (msg.message == WM_QUIT)
@@ -128,6 +173,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 		}
 		else
 		{//DirectXの処理
+
 			dwCurrentTime = timeGetTime();//現在時刻を取得
 			if ((dwCurrentTime - dwFPSLastTime) >= 500)
 			{//0.5秒経過
@@ -139,8 +185,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 
 			if ((dwCurrentTime - dwExedastTime) >= (1000 / 60))
 			{//60分の1秒経過
+
+
 				dwExedastTime = dwCurrentTime;//処理開始の時刻[現在時刻]を保存
 											  //更新処理
+				show_another_window = ImGuiTxet(show_demo_window, show_another_window);
+
 				Update(hWnd);
 
 				//描画処理
@@ -149,10 +199,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 				dwFrameCount++;
 			}
 		}
+
 	}
+
+
 	//終了処理
 	Uninit();
 
+
+	::DestroyWindow(hWnd);
+	::UnregisterClass(wcex.lpszClassName, wcex.hInstance);
 
 	//分機能を戻す
 	timeEndPeriod(1);
@@ -161,6 +217,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 
 	return(int)msg.wParam;
 }
+
+//========================
+//ウィンドウだしてやるやつ
+//========================
 static void funcFileSave(HWND hWnd, bool nMap)
 {
 	static OPENFILENAME     ofn;
@@ -198,15 +258,21 @@ static void funcFileSave(HWND hWnd, bool nMap)
 	}
 	press = true;
 }
+
 //========================
 //ウィンドウプロシージャ
 //========================
 LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	//ポイント構造体
-	POINT    pt;
+	//	POINT    pt;
+
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+		return true;
+
 	int nID;//返り値を格納
 	static HWND hWndEditlnput1;		//入力ウィンドウハンドル(識別子)
+
 	switch (uMsg)
 	{
 
@@ -220,7 +286,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 		case VK_ESCAPE: //エスケープが押された
 
-			nID = MessageBox(hWnd, "終了しますか？", "終わりのコマンド", MB_YESNO | MB_TOPMOST);
+			nID = MessageBox(hWnd, "終了しますか？","終わりのコマンド", MB_YESNO | MB_TOPMOST);
 			//第一引数をNULLにするとメッセージBOXアクティブウィンドウにならない
 			//第一引数をhWndにするとこのウィンドウが親(オーナー)になり、
 			//このメッセージBOXを処理しない限りほかの処理ができない
@@ -245,53 +311,53 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		//	break;
 
 	case WM_COMMAND:
-		switch (LOWORD(wParam))
-		{
-		case ID_40001:
-			//マップ保存
-			funcFileSave(hWnd, true);
-	
-			break;
-		case ID_40002:
-			//エネミエネミ保存
-			funcFileSave(hWnd, false);
-
-			break;
-		case ID_40003:
-			//デバックMAPON
-			if (Debug == false)
+			switch (LOWORD(wParam))
 			{
-				Debug = true;
-				ConteSet(0);
-			}
-			EnemyMode = false;
-			break;
-		case ID_40004:
-			//デバックEnemyON
-			if (Debug == false)
-			{
-				Debug = true;
-				ConteSet(0);
-			}
+			case ID_40001:
+				//マップ保存
+				funcFileSave(hWnd, true);
 
-			EnemyMode = true;
-			break;
-		case ID_40005:
-			DebugNumber = 32;
-			//デバックEnemyON
+				break;
+			case ID_40002:
+				//エネミエネミ保存
+				funcFileSave(hWnd, false);
 
-			break;
-		case ID_40006:
-			//バージョン(A)
-			MessageBox(hWnd, ("更新したこと\n敵消せます\n敵動かせます"), ("マップエディターVer1.1"), MB_OK);		
-			break;
-		case ID_40007:
-			//バージョン(A)
-			MessageBox(hWnd,("範囲選択"),  ("マップエディターVer1.2"), MB_OK);
-			break;
-		default:
-			press = false;
-			break;
+				break;
+			case ID_40003:
+				//デバックMAPON
+				if (Debug == false)
+				{
+					Debug = true;
+					ConteSet(0);
+				}
+				EnemyMode = false;
+				break;
+			case ID_40004:
+				//デバックEnemyON
+				if (Debug == false)
+				{
+					Debug = true;
+					ConteSet(0);
+				}
+
+				EnemyMode = true;
+				break;
+			case ID_40005:
+				DebugNumber = 32;
+				//デバックEnemyON
+
+				break;
+			case ID_40006:
+				//バージョン(A)
+				MessageBox(hWnd, ("更新したこと\n敵消せます\n敵動かせます"), ("マップエディターVer1.1"), MB_OK);
+				break;
+			case ID_40007:
+				//バージョン(A)
+				MessageBox(hWnd, ("範囲選択"), ("マップエディターVer1.2"), MB_OK);
+				break;
+			default:
+				press = false;
+				break;
 		}
 		break;
 	}
@@ -398,13 +464,17 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)//TRUE：ウインドウ/FAL
 	}
 
 	//デバック表示用のフォント
-	D3DXCreateFont(g_pD3DDevice, 18, 0, 0, 0, FALSE, SHIFTJIS_CHARSET,
+	D3DXCreateFont(g_pD3DDevice, 50, 0, 0, 0, FALSE, SHIFTJIS_CHARSET,
 		OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH, "HG創英角ｺﾞｼｯｸUB", &g_pFont);
+
+
 
 	//乱数の初期化
 	srand((unsigned int)time(0));
 
+
 	bLine = true;
+	InitBG();
 	InitLight();
 	InitCamera();
 	InitBG();
@@ -414,7 +484,7 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)//TRUE：ウインドウ/FAL
 	InitPalletE();
 	InitSelect();
 	InitPlayer();
-	//
+
 	return S_OK;
 }
 
@@ -434,6 +504,12 @@ void Uninit(void)
 	UninitPlayer();
 	UninitPalletE();
 	UninitSelect();
+
+
+	ImGui_ImplDX9_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	if (g_pFont != NULL)
 	{
 		g_pFont->Release();
@@ -464,10 +540,8 @@ void Update(HWND hWnd)
 	UpdateEnemy();
 	UpdatePlayer();	// プレイヤー
 	UpdateMap();
-
 	UpdateSelect(DebugNumber, DebugNumberEnemy);
 
-#ifdef _DEBUG
 	if (GetKeyboardTrigger(DIK_U))
 	{//敵の座標をロードする（モデルビュアー式）
 		LoadSetFile("Data\\hoge2.txt");
@@ -512,7 +586,6 @@ void Update(HWND hWnd)
 	{
 		EnemyMode = !EnemyMode;
 	}
-#endif // DEBUG
 }
 
 //===================
@@ -529,6 +602,20 @@ void Draw(void)
 
 	if (SUCCEEDED(g_pD3DDevice->BeginScene()))
 	{//成功したとき
+
+	 //D3DCOLOR clear_col_dx = D3DCOLOR_RGBA((int)(clear_color.x*clear_color.w*0.0f), (int)(clear_color.y*clear_color.w*255.0f), (int)(clear_color.z*clear_color.w*255.0f), (int)(clear_color.w*255.0f));
+	 //g_pD3DDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, clear_col_dx, 1.0f, 0);
+
+	 //g_pD3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+	 //g_pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	 //g_pD3DDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+
+	 //HRESULT result = g_pD3DDevice->Present(NULL, NULL, NULL, NULL);
+
+
+	 //if (result == D3DERR_DEVICELOST && g_pD3DDevice->TestCooperativeLevel() == D3DERR_DEVICENOTRESET)
+	 //	ResetDevice();
+
 		SetCamera();	// カメラ
 		DrawBG();
 		DrawMap();
@@ -541,9 +628,12 @@ void Draw(void)
 		GetDevice()->Clear(0, NULL, (D3DCLEAR_ZBUFFER), D3DCOLOR_RGBA(0, 0, 0, 0), 1.0f, 0);
 		DrawEnemy();
 		DrawPlayer();		// プレイヤー
+
+		ImGui::Render();
+		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
 #ifdef _DEBUG
-		//debugの表示
-		DrawDebug();
+
 #endif // DEBUG
 		//描画終了
 		g_pD3DDevice->EndScene();
@@ -556,7 +646,6 @@ void Draw(void)
 //------------------------
 void DrawDebug(void)
 {
-
 	RECT rect = { 0,0,SCREEN_WIDTH,SCREEN_HEIGHT };
 	char aStr[MAX_NAME][512];
 
@@ -607,6 +696,8 @@ void DrawDebug(void)
 		//テキストの描画
 		g_pFont->DrawText(NULL, &aStr[i][0], -1, &rect, DT_LEFT, D3DCOLOR_RGBA(255, 255, 255, 255));
 	}
+	
+
 }
 
 //------------------------
@@ -616,6 +707,7 @@ bool IsDebug(void)//取得
 {
 	return Debug;
 }
+
 //---------------------------------------
 //セットテクスチャ(3d)
 //---------------------------------------
@@ -626,7 +718,6 @@ void Settex(VERTEX_3D *pVtx, float left, float right, float top, float down)
 	pVtx[1].tex = D3DXVECTOR2(right, top);
 	pVtx[2].tex = D3DXVECTOR2(left, down);
 	pVtx[3].tex = D3DXVECTOR2(right, down);
-
 }
 
 //---------------------------------------
@@ -709,15 +800,297 @@ void SetNormalpos2d(VERTEX_2D *pVtx, float XUP, float XDW, float YUP, float YDW)
 	pVtx[3].pos = D3DXVECTOR3(XDW, YDW, 0.0f);
 }
 
-//------------------------
-//すべての削除（現在未完）
-//------------------------
-void Allfalse(void)
+void ResetDevice()
 {
-	FalseSetMap();
-	//falseSetEnemy();
+	ImGui_ImplDX9_InvalidateDeviceObjects();
+	HRESULT hr = g_pD3DDevice->Reset(&g_d3dpp);
+	if (hr == D3DERR_INVALIDCALL)
+		IM_ASSERT(0);
+	ImGui_ImplDX9_CreateDeviceObjects();
 }
 
+// ImGui Bezier widget. @r-lyeh, public domain
+// v1.02: add BezierValue(); comments; usage
+// v1.01: out-of-bounds coord snapping; custom border width; spacing; cosmetics
+// v1.00: initial version
+//
+// [ref] http://robnapier.net/faster-bezier
+// [ref] http://easings.net/es#easeInSine
+//
+// Usage:
+// {  static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f }; 
+//    ImGui::Bezier( "easeOutSine", v );       // draw
+//    float y = ImGui::BezierValue( 0.5f, v ); // x delta in [0..1] range
+// }
+
+
+
+namespace ImGui
+{
+	template<int steps>
+	void bezier_table(ImVec2 P[4], ImVec2 results[steps + 1]) {
+		static float C[(steps + 1) * 4], *K = 0;
+		if (!K) {
+			K = C;
+			for (unsigned step = 0; step <= steps; ++step) {
+				float t = (float)step / (float)steps;
+				C[step * 4 + 0] = (1 - t)*(1 - t)*(1 - t);   // * P0
+				C[step * 4 + 1] = 3 * (1 - t)*(1 - t) * t; // * P1
+				C[step * 4 + 2] = 3 * (1 - t) * t*t;     // * P2
+				C[step * 4 + 3] = t*t*t;               // * P3
+			}
+		}
+		for (unsigned step = 0; step <= steps; ++step) {
+			ImVec2 point = {
+				K[step * 4 + 0] * P[0].x + K[step * 4 + 1] * P[1].x + K[step * 4 + 2] * P[2].x + K[step * 4 + 3] * P[3].x,
+				K[step * 4 + 0] * P[0].y + K[step * 4 + 1] * P[1].y + K[step * 4 + 2] * P[2].y + K[step * 4 + 3] * P[3].y
+			};
+			results[step] = point;
+		}
+	}
+
+	float BezierValue(float dt01, float P[4]) {
+		enum { STEPS = 256 };
+		ImVec2 Q[4] = { { 0, 0 },{ P[0], P[1] },{ P[2], P[3] },{ 1, 1 } };
+		ImVec2 results[STEPS + 1];
+		bezier_table<STEPS>(Q, results);
+		return results[(int)((dt01 < 0 ? 0 : dt01 > 1 ? 1 : dt01) * STEPS)].y;
+	}
+
+	int Bezier(const char *label, float P[4]) {
+		// visuals
+		enum { SMOOTHNESS = 64 }; // curve smoothness: the higher number of segments, the smoother curve
+		enum { CURVE_WIDTH = 4 }; // main curved line width
+		enum { LINE_WIDTH = 1 }; // handlers: small lines width
+		enum { GRAB_RADIUS = 6 }; // handlers: circle radius
+		enum { GRAB_BORDER = 2 }; // handlers: circle border width
+
+		const ImGuiStyle& Style = GetStyle();
+		const ImGuiIO& IO = GetIO();
+		ImDrawList* DrawList = GetWindowDrawList();
+		ImGuiWindow* Window = GetCurrentWindow();
+		if (Window->SkipItems)
+			return false;
+
+		// header and spacing
+		int changed = SliderFloat4(label, P, 0, 1, "%.3f", 1.0f);
+		int hovered = IsItemActive() || IsItemHovered(); // IsItemDragged() ?
+		Dummy(ImVec2(0, 3));
+
+		// prepare canvas
+		const float avail = GetContentRegionAvail().x;
+		const float dim = ImMin(avail, 128.f);
+		ImVec2 Canvas(dim, dim);
+
+		ImRect bb(Window->DC.CursorPos, Window->DC.CursorPos + Canvas);
+		ItemSize(bb);
+		if (!ItemAdd(bb, NULL))
+			return changed;
+
+		const ImGuiID id = Window->GetID(label);
+		// hovered |= 0 != IsItemHovered(ImRect(bb.Min, bb.Min + ImVec2(avail,dim)), id);
+
+		RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, Style.FrameRounding);
+
+		// background grid
+		for (int i = 0; i <= Canvas.x; i += (Canvas.x / 4)) {
+			DrawList->AddLine(
+				ImVec2(bb.Min.x + i, bb.Min.y),
+				ImVec2(bb.Min.x + i, bb.Max.y),
+				GetColorU32(ImGuiCol_TextDisabled));
+		}
+		for (int i = 0; i <= Canvas.y; i += (Canvas.y / 4)) {
+			DrawList->AddLine(
+				ImVec2(bb.Min.x, bb.Min.y + i),
+				ImVec2(bb.Max.x, bb.Min.y + i),
+				GetColorU32(ImGuiCol_TextDisabled));
+		}
+
+		// eval curve
+		ImVec2 Q[4] = { { 0, 0 },{ P[0], P[1] },{ P[2], P[3] },{ 1, 1 } };
+		ImVec2 results[SMOOTHNESS + 1];
+		bezier_table<SMOOTHNESS>(Q, results);
+
+		// control points: 2 lines and 2 circles
+		{
+			char buf[128];
+			sprintf(buf, "0##%s", label);
+
+			// handle grabbers
+			for (int i = 0; i < 2; ++i)
+			{
+				ImVec2 pos = ImVec2(P[i * 2 + 0], 1 - P[i * 2 + 1]) * (bb.Max - bb.Min) + bb.Min;
+				SetCursorScreenPos(pos - ImVec2(GRAB_RADIUS, GRAB_RADIUS));
+				InvisibleButton((buf[0]++, buf), ImVec2(2 * GRAB_RADIUS, 2 * GRAB_RADIUS));
+				if (IsItemActive() || IsItemHovered())
+				{
+					SetTooltip("(%4.3f, %4.3f)", P[i * 2 + 0], P[i * 2 + 1]);
+				}
+				if (IsItemActive() && IsMouseDragging(0))
+				{
+					P[i * 2 + 0] += GetIO().MouseDelta.x / Canvas.x;
+					P[i * 2 + 1] -= GetIO().MouseDelta.y / Canvas.y;
+					changed = true;
+				}
+			}
+
+			if (hovered || changed) DrawList->PushClipRectFullScreen();
+
+			// draw curve
+			{
+				ImColor color(GetStyle().Colors[ImGuiCol_PlotLines]);
+				for (int i = 0; i < SMOOTHNESS; ++i) {
+					ImVec2 p = { results[i + 0].x, 1 - results[i + 0].y };
+					ImVec2 q = { results[i + 1].x, 1 - results[i + 1].y };
+					ImVec2 r(p.x * (bb.Max.x - bb.Min.x) + bb.Min.x, p.y * (bb.Max.y - bb.Min.y) + bb.Min.y);
+					ImVec2 s(q.x * (bb.Max.x - bb.Min.x) + bb.Min.x, q.y * (bb.Max.y - bb.Min.y) + bb.Min.y);
+					DrawList->AddLine(r, s, color, CURVE_WIDTH);
+				}
+			}
+
+			// draw lines and grabbers
+			float luma = IsItemActive() || IsItemHovered() ? 0.5f : 1.0f;
+			ImVec4 pink(1.00f, 0.00f, 0.75f, luma), cyan(0.00f, 0.75f, 1.00f, luma);
+			ImVec4 white(GetStyle().Colors[ImGuiCol_Text]);
+			ImVec2 p1 = ImVec2(P[0], 1 - P[1]) * (bb.Max - bb.Min) + bb.Min;
+			ImVec2 p2 = ImVec2(P[2], 1 - P[3]) * (bb.Max - bb.Min) + bb.Min;
+			DrawList->AddLine(ImVec2(bb.Min.x, bb.Max.y), p1, ImColor(white), LINE_WIDTH);
+			DrawList->AddLine(ImVec2(bb.Max.x, bb.Min.y), p2, ImColor(white), LINE_WIDTH);
+			DrawList->AddCircleFilled(p1, GRAB_RADIUS, ImColor(white));
+			DrawList->AddCircleFilled(p1, GRAB_RADIUS - GRAB_BORDER, ImColor(pink));
+			DrawList->AddCircleFilled(p2, GRAB_RADIUS, ImColor(white));
+			DrawList->AddCircleFilled(p2, GRAB_RADIUS - GRAB_BORDER, ImColor(cyan));
+
+			if (hovered || changed) DrawList->PopClipRect();
+
+			// restore cursor pos
+			SetCursorScreenPos(ImVec2(bb.Min.x, bb.Max.y + GRAB_RADIUS)); // :P
+		}
+
+		return changed;
+	}
+
+	void ShowBezierDemo()
+	{
+		{ static float v[] = { 0.000f, 0.000f, 1.000f, 1.000f }; Bezier("easeLinear", v); }
+		{ static float v[] = { 0.470f, 0.000f, 0.745f, 0.715f }; Bezier("easeInSine", v); }
+		{ static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f }; Bezier("easeOutSine", v); }
+		{ static float v[] = { 0.445f, 0.050f, 0.550f, 0.950f }; Bezier("easeInOutSine", v); }
+		{ static float v[] = { 0.550f, 0.085f, 0.680f, 0.530f }; Bezier("easeInQuad", v); }
+		{ static float v[] = { 0.250f, 0.460f, 0.450f, 0.940f }; Bezier("easeOutQuad", v); }
+		{ static float v[] = { 0.455f, 0.030f, 0.515f, 0.955f }; Bezier("easeInOutQuad", v); }
+		{ static float v[] = { 0.550f, 0.055f, 0.675f, 0.190f }; Bezier("easeInCubic", v); }
+		{ static float v[] = { 0.215f, 0.610f, 0.355f, 1.000f }; Bezier("easeOutCubic", v); }
+		{ static float v[] = { 0.645f, 0.045f, 0.355f, 1.000f }; Bezier("easeInOutCubic", v); }
+		{ static float v[] = { 0.895f, 0.030f, 0.685f, 0.220f }; Bezier("easeInQuart", v); }
+		{ static float v[] = { 0.165f, 0.840f, 0.440f, 1.000f }; Bezier("easeOutQuart", v); }
+		{ static float v[] = { 0.770f, 0.000f, 0.175f, 1.000f }; Bezier("easeInOutQuart", v); }
+		{ static float v[] = { 0.755f, 0.050f, 0.855f, 0.060f }; Bezier("easeInQuint", v); }
+		{ static float v[] = { 0.230f, 1.000f, 0.320f, 1.000f }; Bezier("easeOutQuint", v); }
+		{ static float v[] = { 0.860f, 0.000f, 0.070f, 1.000f }; Bezier("easeInOutQuint", v); }
+		{ static float v[] = { 0.950f, 0.050f, 0.795f, 0.035f }; Bezier("easeInExpo", v); }
+		{ static float v[] = { 0.190f, 1.000f, 0.220f, 1.000f }; Bezier("easeOutExpo", v); }
+		{ static float v[] = { 1.000f, 0.000f, 0.000f, 1.000f }; Bezier("easeInOutExpo", v); }
+		{ static float v[] = { 0.600f, 0.040f, 0.980f, 0.335f }; Bezier("easeInCirc", v); }
+		{ static float v[] = { 0.075f, 0.820f, 0.165f, 1.000f }; Bezier("easeOutCirc", v); }
+		{ static float v[] = { 0.785f, 0.135f, 0.150f, 0.860f }; Bezier("easeInOutCirc", v); }
+		{ static float v[] = { 0.600f, -0.28f, 0.735f, 0.045f }; Bezier("easeInBack", v); }
+		{ static float v[] = { 0.175f, 0.885f, 0.320f, 1.275f }; Bezier("easeOutBack", v); }
+		{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; Bezier("easeInOutBack", v); }
+		// easeInElastic: not a bezier
+		// easeOutElastic: not a bezier
+		// easeInOutElastic: not a bezier
+		// easeInBounce: not a bezier
+		// easeOutBounce: not a bezier
+		// easeInOutBounce: not a bezier
+	}
+}
+
+bool ImGuiTxet(bool show_demo_window, bool show_another_window)
+{
+	ImGui_ImplDX9_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+
+	// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+	if (show_demo_window)
+	{
+		
+		static float f = 0.0f;
+		static int counter = 0;
+		static int nSize = 0;
+
+		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
+		ImGui::InputText("textbox 1", Txet, sizeof(Txet));
+		//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+		ImGui::Checkbox("Another Window", &show_another_window);
+
+		ImGui::SliderInt("Size", &nSize, 0, 10);
+
+	
+
+		ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+		nSize = Botan(nSize);
+
+		static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
+		ImGui::Bezier("あああ", v);       // draw
+		float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
+
+		{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
+
+	
+		ImGui::SameLine();
+
+		//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
+	}
+
+	// 3. Show another simple window.
+	if (show_another_window)
+	{
+		ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("Hello from another window!");
+		if (ImGui::Button("Close Me"))
+		{
+			show_another_window = false;
+		}
+		ImGui::End();
+	}
+
+
+	////ここが背景ドロー
+
+
+	return show_another_window;
+
+}
+
+
+int Botan(int nSize)
+{
+	if (ImGui::Button("1++"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	{
+		nSize++;
+	}
+	if (ImGui::Button("1--"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	{
+		nSize--;
+	}
+	if (ImGui::Button("5++"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	{
+		nSize += 5;
+	}
+	if (ImGui::Button("5--"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	{
+		nSize -= 5;
+	}
+	return nSize;
+}
 //------------------------
 //敵デバック時の設定
 //------------------------
@@ -744,7 +1117,7 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 			DebugNumberEnemy = CollisionPalletE(Mouse);
 		}
 	}
-	
+
 
 	//------------------------
 	//エネミのセット
@@ -762,14 +1135,14 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
 					&pCamera->mtxView,										// ビューマトリックス
 					&pCamera->mtxProjection);
-				
-				SetEnemy(D3DXVECTOR3(BLOCK.x, BLOCK.y, 0.0f), D3DXVECTOR3(0.0f,0.0f,0.0f),(ENEMY_TYPE)DebugNumberEnemy);
+
+				SetEnemy(D3DXVECTOR3(BLOCK.x, BLOCK.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)DebugNumberEnemy);
 			}
 			else
 			{
 				Camera *pCamera = GetCamera();
 				Mouse = WorldCastScreen(&Mouse,								// スクリーン座標
-					D3DXVECTOR3(SCREEN_WIDTH,SCREEN_HEIGHT,0.0f),			// スクリーンサイズ
+					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
 					&pCamera->mtxView,										// ビューマトリックス
 					&pCamera->mtxProjection);								// プロジェクションマトリックス
 
@@ -778,7 +1151,7 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 		}
 	}
 	SelectDes(Mouse);
-	
+
 
 }
 
@@ -795,7 +1168,7 @@ void MapSetSystem(D3DXVECTOR3 Mouse)
 	if (GetMouseTrigger(MOUSE_INPUT_RIGHT))
 	{//マウスポインターの位置
 		DebugNumber++;
-		DebugNumber %= X_MAP * (Y_MAP - 4)+1;
+		DebugNumber %= X_MAP * (Y_MAP - 4) + 1;
 		if (GetKeyboardPress(DIK_LCONTROL))
 		{
 			DebugNumber = CollisionPallet(Mouse);
