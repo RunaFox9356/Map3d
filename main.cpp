@@ -52,6 +52,9 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window);
 int Botan(int nSize);
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+D3DPRESENT_PARAMETERS    g_d3dpp = {};
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 //===================
 //メイン関数
 //===================
@@ -126,8 +129,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
-	ImGui_ImplDX9_Init(g_pD3DDevice);
-
+	ImGui_ImplDX9_Init(s_pD3DDevice);
 
 	//分解能の設定
 	timeBeginPeriod(1);
@@ -296,51 +298,50 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			switch (LOWORD(wParam))
 			{
 			case ID_40001:
-				//マップ保存
+				// マップ保存
 				funcFileSave(hWnd, true);
 
 				break;
 			case ID_40002:
-				//エネミエネミ保存
+				// エネミー保存
 				funcFileSave(hWnd, false);
 
 				break;
 			case ID_40003:
 				//デバックMAPON
-				if (Debug == false)
+				if (!IsDebug())
 				{
-					Debug = true;
+					ChangeDebug(true);
 					ConteSet(0);
 				}
-				EnemyMode = false;
+				ChangeSetMode(false);
 				break;
 			case ID_40004:
-				//デバックEnemyON
-				if (Debug == false)
+				// デバックEnemyON
+				if (!IsDebug())
 				{
-					Debug = true;
+					ChangeDebug(true);
 					ConteSet(0);
 				}
 
-				EnemyMode = true;
+				ChangeSetMode(true);
 				break;
 			case ID_40005:
-				DebugNumber = 32;
-				//デバックEnemyON
-
+				setDebugNumber(32);
+				// デバックEnemyON
 				break;
 			case ID_40006:
-				//バージョン(A)
+				// バージョン(A)
 				MessageBox(hWnd, ("更新したこと\n敵消せます\n敵動かせます"), ("マップエディターVer1.1"), MB_OK);
 				break;
 			case ID_40007:
-				//バージョン(A)
+				// バージョン(A)
 				MessageBox(hWnd, ("範囲選択"), ("マップエディターVer1.2"), MB_OK);
 				break;
 			default:
-				press = false;
+				bPress = false;
 				break;
-		}
+			}
 		break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -595,7 +596,7 @@ void SetNormalpos2d(VERTEX_2D *pVtx, float XUP, float XDW, float YUP, float YDW)
 void ResetDevice()
 {
 	ImGui_ImplDX9_InvalidateDeviceObjects();
-	HRESULT hr = g_pD3DDevice->Reset(&g_d3dpp);
+	HRESULT hr = s_pD3DDevice->Reset(&g_d3dpp);
 	if (hr == D3DERR_INVALIDCALL)
 		IM_ASSERT(0);
 	ImGui_ImplDX9_CreateDeviceObjects();
@@ -685,13 +686,13 @@ namespace ImGui
 		RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, Style.FrameRounding);
 
 		// background grid
-		for (int i = 0; i <= Canvas.x; i += (Canvas.x / 4)) {
+		for (int i = 0; i <= Canvas.x; i += (Canvas.x * 0.25f)) {
 			DrawList->AddLine(
 				ImVec2(bb.Min.x + i, bb.Min.y),
 				ImVec2(bb.Min.x + i, bb.Max.y),
 				GetColorU32(ImGuiCol_TextDisabled));
 		}
-		for (int i = 0; i <= Canvas.y; i += (Canvas.y / 4)) {
+		for (int i = 0; i <= Canvas.y; i += (Canvas.y * 0.25f)) {
 			DrawList->AddLine(
 				ImVec2(bb.Min.x, bb.Min.y + i),
 				ImVec2(bb.Max.x, bb.Min.y + i),
@@ -882,97 +883,4 @@ int Botan(int nSize)
 		nSize -= 5;
 	}
 	return nSize;
-}
-//------------------------
-//敵デバック時の設定
-//------------------------
-void EnemySetSystem(D3DXVECTOR3 Mouse)
-{
-
-	//------------------------
-	//マップのマス目基準にするかしないか
-	//------------------------
-	if (GetKeyboardTrigger(DIK_S))
-	{//
-		EnemyAlignment = !EnemyAlignment;
-	}
-
-	//------------------------
-	//スポイト
-	//------------------------
-	if (GetMouseTrigger(MOUSE_INPUT_RIGHT))
-	{//マウスポインターの位置
-		DebugNumberEnemy++;
-		DebugNumberEnemy %= (int)ENEMY_TYPE_MAX;
-		if (GetKeyboardPress(DIK_LCONTROL))
-		{
-			DebugNumberEnemy = CollisionPalletE(Mouse);
-		}
-	}
-
-
-	//------------------------
-	//エネミのセット
-	//------------------------
-	if (GetMouseTrigger(MOUSE_INPUT_LEFT))
-	{//
-		bool Hit = CollisionMap(Mouse);
-		if (Hit)
-		{
-			if (EnemyAlignment)
-			{
-				D3DXVECTOR3 BLOCK = EnemyMap(Mouse*Size);
-				Camera *pCamera = GetCamera();
-				BLOCK = WorldCastScreen(&BLOCK,								// スクリーン座標
-					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-					&pCamera->mtxView,										// ビューマトリックス
-					&pCamera->mtxProjection);
-
-				SetEnemy(D3DXVECTOR3(BLOCK.x, BLOCK.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)DebugNumberEnemy);
-			}
-			else
-			{
-				Camera *pCamera = GetCamera();
-				Mouse = WorldCastScreen(&Mouse,								// スクリーン座標
-					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-					&pCamera->mtxView,										// ビューマトリックス
-					&pCamera->mtxProjection);								// プロジェクションマトリックス
-
-				SetEnemy(D3DXVECTOR3(Mouse.x, Mouse.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)DebugNumberEnemy);
-			}
-		}
-	}
-	SelectDes(Mouse);
-
-
-}
-
-//------------------------
-//マップデバック時の設定
-//------------------------
-void MapSetSystem(D3DXVECTOR3 Mouse)
-{
-	if (GetMousePress(MOUSE_INPUT_LEFT))
-	{//マウスポインターの位置
-		ConversionMap(Mouse, DebugNumber);
-	}
-
-	if (GetMouseTrigger(MOUSE_INPUT_RIGHT))
-	{//マウスポインターの位置
-		DebugNumber++;
-		DebugNumber %= X_MAP * (Y_MAP - 4) + 1;
-		if (GetKeyboardPress(DIK_LCONTROL))
-		{
-			DebugNumber = CollisionPallet(Mouse);
-		}
-
-	}
-	if (GetKeyboardPress(DIK_LCONTROL))
-	{
-		PalletMoveMap(true);
-	}
-	else
-	{
-		PalletMoveMap(false);
-	}
 }

@@ -89,6 +89,7 @@ void UninitEnemy(void)
 				pEnemy->parts[i].pBuffer->Release();
 				pEnemy->parts[i].pBuffer = NULL;
 			}
+
 			if (pEnemy->parts[i].pMesh != NULL)
 			{
 				pEnemy->parts[i].pMesh->Release();

@@ -15,39 +15,39 @@ class CPlayer
 public:
 	typedef enum
 	{
-		ANIME_NORMAL = 0,	//ニュートラル
-		ANIME_RUN,			//歩き
-		ANIME_ATTACK,		//攻撃
-		ANIME_JUMP,			//ジャンプ
-		ANIME_LANDING,		//着地
+		ANIME_NORMAL = 0,	// ニュートラル
+		ANIME_RUN,			// 歩き
+		ANIME_ATTACK,		// 攻撃
+		ANIME_JUMP,			// ジャンプ
+		ANIME_LANDING,		// 着地
 		ANIME_MAX
 	}ANIME;
 
 	typedef enum
 	{
-		STATUS_NORMAL = 0,	//ニュートラル
-		STATUS_RUN,			//歩き
-		STATUS_ATTACK,		//攻撃
-		STATUS_JUMPUP,		//ジャンプ
-		STATUS_JUMPDOWN,	//ジャンプ
-		STATUS_LANDING,		//着地
+		STATUS_NORMAL = 0,	// ニュートラル
+		STATUS_RUN,			// 歩き
+		STATUS_ATTACK,		// 攻撃
+		STATUS_JUMPUP,		// ジャンプ
+		STATUS_JUMPDOWN,	// ジャンプ
+		STATUS_LANDING,		// 着地
 		STATUS_MAX
 	}STATUS;
 
 	typedef enum
 	{
-		DAMEGE_NORMAL = 0,	//ニュートラル
-		DAMEGE_NOU,			//ダメージくらってる
+		DAMEGE_NORMAL = 0,	// ニュートラル
+		DAMEGE_NOU,			// ダメージくらってる
 		DAMEGE_MAX
 	}DAMEGE;
 
 	typedef enum
 	{
-		COPY_NORMAL = 0,	//ニュートラル
-		COPY_SWORD,			//ソード
-		COPY_FIRE,			//ファイア
-		COPY_LASER,			//レーザー
-		COPY_CUTTER,		//カッター
+		COPY_NORMAL = 0,	// ニュートラル
+		COPY_SWORD,			// ソード
+		COPY_FIRE,			// ファイア
+		COPY_LASER,			// レーザー
+		COPY_CUTTER,		// カッター
 		COPY_MAX
 	}COPY;
 
@@ -62,12 +62,12 @@ public:
 	}MODELDATAPLAYER;
 
 public:
-	static const float ATTENUATION;		//減衰係数
-	static const float SPEED;			//スピード
-	static const float WIDTH;			//モデルの半径
-	static const int MAX_PRAYER;		//最大数
-	static const int MAX_MOVE;			//アニメーションの最大数
-	static const int INVINCIBLE;		//無敵時間
+	static const float ATTENUATION;		// 減衰係数
+	static const float SPEED;			// スピード
+	static const float WIDTH;			// モデルの半径
+	static const int MAX_PRAYER;		// 最大数
+	static const int MAX_MOVE;			// アニメーションの最大数
+	static const int INVINCIBLE;		// 無敵時間
 	static const int MAX_MODELPARTS = 9;
 	static const int MAX_COPY;
 
@@ -75,21 +75,20 @@ public:
 	CPlayer();
 	~CPlayer();
 
-	void Init(void);	//初期化
-	void Uninit(void);	//破棄
-	void Update(void);	//更新
-	void Draw(void);	//描画
+	void Init(void);	// 初期化
+	void Uninit(void);	// 破棄
+	void Update(void);	// 更新
+	void Draw(void);	// 描画
 
-	void Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot);//セット引数座標と読み込むファイル名
+	void Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot);	// セット引数座標と読み込むファイル名
 
 	void SetCopy(char *pFileName, PartsFile *partsFile, Parts *parts, MyMotion *Motion, int *nMaxParts);
 
 private:
 	void Collision(void);	// 当たり判定まとめ
-	void MoveSet(void);		//ムーブセット
+	void Move(void);		// 移動
 
 private:
-
 	D3DXVECTOR3		m_pos;						// 位置
 	D3DXVECTOR3		m_posOld;					// 位置過去
 	D3DXVECTOR3		m_move;						// ムーブ
@@ -121,7 +120,7 @@ private:
 	bool			m_bMotion;					// モーションを使用状況
 
 	bool			m_isUse;					// 使ってるか使ってないか
-	bool			m_notLoop;					// ループするかしないか
+	bool			m_isLoop;					// ループするかしないか
 
 	char			m_aFirename[256];//
 
