@@ -14,14 +14,13 @@
 //------------------------------------
 // static変数
 //------------------------------------
-#define ATTENUATION (0.5f)	//減衰係数
-#define SPEED (1.0f)		//スピード
-static const float WIDTH = 10.0f;		//モデルの半径
-static const int MAX_PRAYER = 16;		//最大数
-static const int MAX_MOVE = 9;			//アニメーションの最大数
-static const int INVINCIBLE = 300;		//無敵時間
-static const int MAX_MODELPARTS = 9;
-static const int MAX_COPY = 4;
+const float CPlayer::ATTENUATION = 0.5f;	// 
+const float CPlayer::SPEED = 1.0f;			// 移動量
+const float CPlayer::WIDTH = 10.0f;			// モデルの半径
+const int CPlayer::MAX_PRAYER = 16;			// 最大数
+const int CPlayer::MAX_MOVE = 9;			// アニメーションの最大数
+const int CPlayer::INVINCIBLE = 300;		// 無敵時間
+const int CPlayer::MAX_COPY = 4;			// 最大コピー数
 
 //------------------------------------
 // コンストラクタ
@@ -53,8 +52,8 @@ CPlayer::CPlayer() :
 	m_bMotionBlend(false),
 	m_bMotion(false),
 	m_isUse(false),
-	m_notLoop(false),
-	//m_aFirename({}),
+	m_isLoop(false),
+	//m_aFirename(),
 	m_time(0),
 	m_nparts(0),
 	m_pow(0),
@@ -85,8 +84,6 @@ void CPlayer::Init(void)
 	m_modelMax = D3DXVECTOR3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
 	m_motionTypeOld = m_motionType;
-
-	m_isUse = true;
 
 	Set(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f));
 }
@@ -123,15 +120,15 @@ void CPlayer::Update(void)
 	if (!m_bMotion)
 	{// 使用してるモーションがない場合
 		m_motionType = ANIME_NORMAL;
-		m_notLoop = false;
+		m_isLoop = false;
 	}
 
-	MoveSet();	//動きセット
+	Move();	//動きセット
 
 	Collision();//床
 
 	// //アニメーションや足音の設定
-	if (!m_notLoop)
+	if (!m_isLoop)
 	{
 		m_motionType = ANIME_NORMAL;
 	}
@@ -169,7 +166,7 @@ void CPlayer::Update(void)
 	}
 	if (GetKeyboardPress(DIK_N))
 	{
-		m_notLoop = true;
+		m_isLoop = true;
 	}
 	if (GetKeyboardPress(DIK_J))
 	{
@@ -182,9 +179,7 @@ void CPlayer::Update(void)
 	{
 		m_copy = COPY_FIRE;
 		// ファイルの読み込み
-		SetCopy("Data/system/Gon/flare.txt", &m_partsFile[7], 
-					&m_parts[7], &m_motion[0],
-					&m_nMaxModelParts);
+		SetCopy("Data/system/Gon/flare.txt", &m_partsFile[7], &m_parts[7], &m_motion[0], &m_nMaxModelParts);
 	}
 	if (GetKeyboardPress(DIK_F))
 	{
@@ -298,9 +293,8 @@ void CPlayer::Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot)
 	m_move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);				// 移動量
 	m_bMotionBlend = false;								// モーションブレンドの使用状況
 	m_isUse = true;										// 使用状況
-														//g_nIdxShadow[nCntPlayer] = SetShadow(D3DXVECTOR3(0.0f, 0.0f, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f));	//影の設定処理の初期化
 
-														// ファイルの読み込み
+	// ファイルの読み込み
 	LoodSetMotion("Data/system/Gon/Fox.txt", m_partsFile, m_parts, m_motion, &m_nMaxModelParts);
 
 	for (int i = 0; i < m_nMaxModelParts; i++)
@@ -316,7 +310,7 @@ void CPlayer::Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot)
 		pParts->vtxMin = D3DXVECTOR3(1000.0f, 1000.0f, 1000.0f);		// 頂点座標の最小値
 		pParts->vtxMax = D3DXVECTOR3(-1000.0f, -1000.0f, -1000.0f);	// 頂点座標の最大値
 
-																	// Xファイルの読み込み
+		// Xファイルの読み込み
 		D3DXLoadMeshFromX(m_partsFile[pParts->nType].aName,
 			D3DXMESH_SYSTEMMEM,
 			GetDevice(),
@@ -331,7 +325,7 @@ void CPlayer::Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot)
 		DWORD sizeFVF;	// 頂点フォーマットのサイズ
 		BYTE *pVtxBuff;	// 頂点バッファへのポインタ
 
-						// 頂点数の取得
+		// 頂点数の取得
 		nNumVtx = pParts->pMesh->GetNumVertices();
 
 		// 頂点フォーマットのサイズの取得
@@ -409,12 +403,12 @@ void CPlayer::Set(D3DXVECTOR3 pos, D3DXVECTOR3 rot)
 //------------------------------------
 // 移動処理
 //------------------------------------
-void CPlayer::MoveSet(void)
+void CPlayer::Move(void)
 {
+	// 移動係数の宣言
 	int nDash = 1;
 	if (GetKeyboardPress(DIK_LSHIFT) || GetKeyboardPress(DIK_RSHIFT) || GetJoypadPress(JOYKEY_A, 0))
 	{//シフトダッシュ
-	 //SetParticle(m_pos, m_move, D3DXCOLOR(1.0f, 1.0f, 1.0f, 1.0f), 20.0f, 20.0f, PARTICLETYPE_SMOKE, 20);
 		nDash = 3;
 	}
 
@@ -492,11 +486,13 @@ void CPlayer::MoveSet(void)
 		m_damege = DAMEGE_NORMAL;
 	}
 
-	m_move.x += (0.0f - m_move.x) * 0.5f;//（目的の値-現在の値）＊減衰係数
+	//（目的の値-現在の値）＊減衰係数
+	m_move.x += (0.0f - m_move.x) * 0.5f;
 	m_move.z += (0.0f - m_move.z) * 0.5f;
-	m_pos += m_move;//移動を加算
 
-					//正規化
+	m_pos += m_move;	// 移動を加算
+
+	// 正規化
 	if (m_consumption > D3DX_PI)
 	{
 		m_consumption += D3DX_PI * 2;
@@ -506,8 +502,8 @@ void CPlayer::MoveSet(void)
 		m_consumption += -D3DX_PI * 2;
 	}
 
-	//減算設定（感性）
-	m_rot.y += (m_consumption)* ATTENUATION;//目的の値-現在の値）＊減衰係数
+	//減算設定（慣性）
+	m_rot.y += m_consumption * ATTENUATION;	//目的の値-現在の値）＊減衰係数
 
 	//正規化
 	if (m_rot.y > D3DX_PI)
@@ -542,8 +538,9 @@ void CPlayer::SetCopy(char * pFileName, PartsFile * partsFile, Parts * parts, My
 	int	nCntKeySet = 0;				// KeySetカウント
 	int	nCntKey = 0;				// Keyカウント
 
-									//-------------------------------
-									//コピーを処理
+	//-------------------------------
+	//コピーを処理
+	//-------------------------------
 	if (m_nMaxModelParts >= 7)
 	{
 		m_nMaxModelParts = 7;

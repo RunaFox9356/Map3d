@@ -54,6 +54,8 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window);
 int Button(int nSize);
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+D3DPRESENT_PARAMETERS    g_d3dpp = {};
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 //===================
 //ÉÅÉCÉìä÷êî
@@ -132,7 +134,6 @@ io.Fonts->AddFontDefault();
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(s_pD3DDevice);
-
 
 	//ï™âî\ÇÃê›íË
 	timeBeginPeriod(1);
@@ -697,13 +698,13 @@ namespace ImGui
 		RenderFrame(bb.Min, bb.Max, GetColorU32(ImGuiCol_FrameBg, 1), true, Style.FrameRounding);
 
 		// background grid
-		for (int i = 0; i <= Canvas.x; i += (Canvas.x / 4)) {
+		for (int i = 0; i <= Canvas.x; i += (Canvas.x * 0.25f)) {
 			DrawList->AddLine(
 				ImVec2(bb.Min.x + i, bb.Min.y),
 				ImVec2(bb.Min.x + i, bb.Max.y),
 				GetColorU32(ImGuiCol_TextDisabled));
 		}
-		for (int i = 0; i <= Canvas.y; i += (Canvas.y / 4)) {
+		for (int i = 0; i <= Canvas.y; i += (Canvas.y * 0.25f)) {
 			DrawList->AddLine(
 				ImVec2(bb.Min.x, bb.Min.y + i),
 				ImVec2(bb.Max.x, bb.Min.y + i),
