@@ -20,11 +20,12 @@ void UpdateProcess();
 void DrawProcess();
 bool GetSetMode();		// 設置モードの取得
 void ChangeSetMode(bool hasChange);	// 設置モードの切り替え
-int GetDebugNumber();
+void setEnemyNumber(int inDebugNumber);
 void setDebugNumber(int inDebugNumber);
 bool IsDebug(void);				// 取得
 void ChangeDebug(bool inDebug);				// 取得
 bool GetEnemyAlignment();
-int GetDebugNumberEnemy();
+int GetDebugNumberEnemy();			//デバックナンバー（Enemy）
+int GetDebugNumber();				//デバックナンバー（プレイヤー）
 
 #endif // !_DEBUG_H_

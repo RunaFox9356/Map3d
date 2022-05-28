@@ -11,11 +11,7 @@
 #include "input.h"
 #include "comn.h"
 #include "bg.h"
-#include "imgui.h"
-#include "imgui_impl_dx9.h"
-#include "imgui_impl_win32.h"
-#include <d3d9.h>
-#include <tchar.h>
+
 #include "enemy.h"
 #include "map.h"
 #include "Pallet.h"
@@ -29,13 +25,17 @@
 #include "light.h"
 #include "comn.h"
 
+#include "imgui.h"
+#include "imgui_impl_dx9.h"
+#include "imgui_impl_win32.h"
+#include <d3d9.h>
+#include <tchar.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
 #define MAX_NAME (7)
 
-#include "map.h"
-#include "enemy.h"
+
 
 //=================================================
 // 静的変数
@@ -44,14 +44,17 @@ static LPDIRECT3D9 s_pD3D = NULL;				// Direct3dオブジェクトへのポインタ
 static LPDIRECT3DDEVICE9 s_pD3DDevice = NULL;	// Direct3dデバイスへのぽいんた
 static int s_nCountFPS;							// FPSのカウンター
 static bool bPress = false;						// リボンバーのトリガー処理のために必要な変数
+D3DPRESENT_PARAMETERS    g_d3dpp = {};
+ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 bool show_demo_window = true;//基本の呼び出し
 bool show_another_window = false;//もう一つ呼び出し
 static char Txet[8] = "";
 void ResetDevice();
 bool ImGuiTxet(bool show_demo_window, bool show_another_window);
-int Botan(int nSize);
+int Button(int nSize);
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 //===================
 //メイン関数
 //===================
@@ -116,7 +119,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-
+	ImFontConfig config;
+config.MergeMode = true;
+io.Fonts->AddFontDefault();
 	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\meiryo.ttc", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 
 
@@ -126,7 +131,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hWnd);
-	ImGui_ImplDX9_Init(g_pD3DDevice);
+	ImGui_ImplDX9_Init(s_pD3DDevice);
 
 
 	//分解能の設定
@@ -291,56 +296,54 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		// //ポップアップメニューを表示
 		// TrackPopupMenu(GetSubMenu(GetMenu(hWnd), 0), TPM_LEFTALIGN, pt.x, pt.y, 0, hWnd, NULL);
 		// break;
-
 	case WM_COMMAND:
 			switch (LOWORD(wParam))
 			{
 			case ID_40001:
-				//マップ保存
+				// マップ保存
 				funcFileSave(hWnd, true);
 
 				break;
 			case ID_40002:
-				//エネミエネミ保存
+				// エネミー保存
 				funcFileSave(hWnd, false);
 
 				break;
 			case ID_40003:
 				//デバックMAPON
-				if (Debug == false)
+				if (!IsDebug())
 				{
-					Debug = true;
+					ChangeDebug(true);
 					ConteSet(0);
 				}
-				EnemyMode = false;
+				ChangeSetMode(false);
 				break;
 			case ID_40004:
-				//デバックEnemyON
-				if (Debug == false)
+				// デバックEnemyON
+				if (!IsDebug())
 				{
-					Debug = true;
+					ChangeDebug(true);
 					ConteSet(0);
 				}
 
-				EnemyMode = true;
+				ChangeSetMode(true);
 				break;
 			case ID_40005:
-				DebugNumber = 32;
-				//デバックEnemyON
-
+				setDebugNumber(32);
+				// デバックEnemyON
 				break;
 			case ID_40006:
-				//バージョン(A)
+				// バージョン(A)
 				MessageBox(hWnd, ("更新したこと\n敵消せます\n敵動かせます"), ("マップエディターVer1.1"), MB_OK);
 				break;
 			case ID_40007:
-				//バージョン(A)
+				// バージョン(A)
 				MessageBox(hWnd, ("範囲選択"), ("マップエディターVer1.2"), MB_OK);
 				break;
 			default:
-				press = false;
+				bPress = false;
 				break;
-		}
+			}
 		break;
 	}
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -445,6 +448,11 @@ void Uninit(void)
 	UninitProcess();
 	UninitDebug();
 
+
+	ImGui_ImplDX9_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	if (s_pD3D != NULL)
 	{
 		s_pD3D->Release();
@@ -512,8 +520,6 @@ void Draw(void)
 int GetFPS()
 {
 	return s_nCountFPS;
-	
-
 }
 
 
@@ -592,15 +598,21 @@ void SetNormalpos2d(VERTEX_2D *pVtx, float XUP, float XDW, float YUP, float YDW)
 	pVtx[3].pos = D3DXVECTOR3(XDW, YDW, 0.0f);
 }
 
+//---------------------------------------
+//デフォルト
+//---------------------------------------
 void ResetDevice()
 {
 	ImGui_ImplDX9_InvalidateDeviceObjects();
-	HRESULT hr = g_pD3DDevice->Reset(&g_d3dpp);
+	HRESULT hr = s_pD3DDevice->Reset(&g_d3dpp);
 	if (hr == D3DERR_INVALIDCALL)
 		IM_ASSERT(0);
 	ImGui_ImplDX9_CreateDeviceObjects();
 }
 
+//---------------------------------------
+//サインカーブのやつ作る
+//---------------------------------------
 // ImGui Bezier widget. @r-lyeh, public domain
 // v1.02: add BezierValue(); comments; usage
 // v1.01: out-of-bounds coord snapping; custom border width; spacing; cosmetics
@@ -803,58 +815,108 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+	bool SetMode = GetSetMode();				// 取得
 
-
-	// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-	if (show_demo_window)
+	if (!SetMode)
 	{
-		
-		static float f = 0.0f;
-		static int counter = 0;
-		static int nSize = 0;
-
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
-		ImGui::InputText("textbox 1", Txet, sizeof(Txet));
-		//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &show_another_window);
-
-		ImGui::SliderInt("Size", &nSize, 0, 10);
-
-	
-
-		ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-		nSize = Botan(nSize);
-
-		static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
-		ImGui::Bezier("あああ", v);       // draw
-		float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
-
-		{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
-
-	
-		ImGui::SameLine();
-
-		//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-	}
-
-	// 3. Show another simple window.
-	if (show_another_window)
-	{
-		ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
+		// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+		if (show_demo_window)
 		{
-			show_another_window = false;
+			int MapSet = GetDebugNumber();
+			setDebugNumber(MapSet);
+
+			ImGui::Begin("MapMode");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
+			ImGui::InputText("textbox 1", Txet, sizeof(Txet));
+			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderInt("Type", &MapSet, 0, MAX_MAP);
+
+
+
+			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			MapSet = Button(MapSet);
+
+			static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
+			ImGui::Bezier("あああ", v);       // draw
+			float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
+
+			{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
+
+
+			ImGui::SameLine();
+
+			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
 		}
-		ImGui::End();
+
+		// 3. Show another simple window.
+		if (show_another_window)
+		{
+			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me"))
+			{
+				show_another_window = false;
+			}
+			ImGui::End();
+		}
 	}
+	else
+	{
+		// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
+		if (show_demo_window)
+		{
+			int EnemySet = GetDebugNumber();
+			setEnemyNumber(EnemySet);
+
+	
+
+			ImGui::Begin("EnemyMode");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
+			ImGui::InputText("textbox 1", Txet, sizeof(Txet));
+			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderInt("Type", &EnemySet, 0, 10);
 
 
+
+			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+			EnemySet = Button(EnemySet);
+
+			static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
+			ImGui::Bezier("あああ", v);       // draw
+			float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
+
+			{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
+
+
+			ImGui::SameLine();
+
+			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+
+		// 3. Show another simple window.
+		if (show_another_window)
+		{
+			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me"))
+			{
+				show_another_window = false;
+			}
+			ImGui::End();
+		}
+	}
 	////ここが背景ドロー
 
 
@@ -863,7 +925,7 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 }
 
 
-int Botan(int nSize)
+int Button(int nSize)
 {
 	if (ImGui::Button("1++"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 	{
@@ -882,97 +944,4 @@ int Botan(int nSize)
 		nSize -= 5;
 	}
 	return nSize;
-}
-//------------------------
-//敵デバック時の設定
-//------------------------
-void EnemySetSystem(D3DXVECTOR3 Mouse)
-{
-
-	//------------------------
-	//マップのマス目基準にするかしないか
-	//------------------------
-	if (GetKeyboardTrigger(DIK_S))
-	{//
-		EnemyAlignment = !EnemyAlignment;
-	}
-
-	//------------------------
-	//スポイト
-	//------------------------
-	if (GetMouseTrigger(MOUSE_INPUT_RIGHT))
-	{//マウスポインターの位置
-		DebugNumberEnemy++;
-		DebugNumberEnemy %= (int)ENEMY_TYPE_MAX;
-		if (GetKeyboardPress(DIK_LCONTROL))
-		{
-			DebugNumberEnemy = CollisionPalletE(Mouse);
-		}
-	}
-
-
-	//------------------------
-	//エネミのセット
-	//------------------------
-	if (GetMouseTrigger(MOUSE_INPUT_LEFT))
-	{//
-		bool Hit = CollisionMap(Mouse);
-		if (Hit)
-		{
-			if (EnemyAlignment)
-			{
-				D3DXVECTOR3 BLOCK = EnemyMap(Mouse*Size);
-				Camera *pCamera = GetCamera();
-				BLOCK = WorldCastScreen(&BLOCK,								// スクリーン座標
-					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-					&pCamera->mtxView,										// ビューマトリックス
-					&pCamera->mtxProjection);
-
-				SetEnemy(D3DXVECTOR3(BLOCK.x, BLOCK.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)DebugNumberEnemy);
-			}
-			else
-			{
-				Camera *pCamera = GetCamera();
-				Mouse = WorldCastScreen(&Mouse,								// スクリーン座標
-					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-					&pCamera->mtxView,										// ビューマトリックス
-					&pCamera->mtxProjection);								// プロジェクションマトリックス
-
-				SetEnemy(D3DXVECTOR3(Mouse.x, Mouse.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)DebugNumberEnemy);
-			}
-		}
-	}
-	SelectDes(Mouse);
-
-
-}
-
-//------------------------
-//マップデバック時の設定
-//------------------------
-void MapSetSystem(D3DXVECTOR3 Mouse)
-{
-	if (GetMousePress(MOUSE_INPUT_LEFT))
-	{//マウスポインターの位置
-		ConversionMap(Mouse, DebugNumber);
-	}
-
-	if (GetMouseTrigger(MOUSE_INPUT_RIGHT))
-	{//マウスポインターの位置
-		DebugNumber++;
-		DebugNumber %= X_MAP * (Y_MAP - 4) + 1;
-		if (GetKeyboardPress(DIK_LCONTROL))
-		{
-			DebugNumber = CollisionPallet(Mouse);
-		}
-
-	}
-	if (GetKeyboardPress(DIK_LCONTROL))
-	{
-		PalletMoveMap(true);
-	}
-	else
-	{
-		PalletMoveMap(false);
-	}
 }

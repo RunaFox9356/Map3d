@@ -172,6 +172,7 @@
     <ClCompile Include="PalletEnemy.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="process.cpp" />
+    <ClCompile Include="range.cpp" />
     <ClCompile Include="Select.cpp" />
     <ClCompile Include="utility.cpp" />
   </ItemGroup>
@@ -198,6 +199,7 @@
     <ClInclude Include="PalletEnemy.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="process.h" />
+    <ClInclude Include="range.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="Select.h" />
     <ClInclude Include="utility.h" />

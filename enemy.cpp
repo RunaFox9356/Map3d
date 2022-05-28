@@ -16,6 +16,7 @@
 #include "motion.h"
 #include "map.h"
 #include "comn.h"
+#include "range.h"
 
 //--------------------------------------------------
 // マクロ定義
@@ -110,6 +111,39 @@ void UpdateEnemy(void)
 		if (!pEnemy->isUse)
 		{
 			continue;
+		}
+
+		D3DXVECTOR3 Mouse = GetMouse();
+		if (s_Enemy[i].bRange)
+		{
+			pEnemy->scale = D3DXVECTOR3(1.2f,1.2f,1.2f);
+
+			s_Enemy[i].pos = s_Enemy[i].posOld + Mouse;
+
+		}
+		else
+		{
+			s_Enemy[i].posOld = s_Enemy[i].pos - Mouse;
+			pEnemy->scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+			//s_Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		}
+
+
+		if (GetKeyboardTrigger(DIK_V))
+		{//Vおすと場所が変わる
+			s_Enemy[i].bRange = false;
+			s_Enemy[i].fLog = s_fLog;
+		}
+
+
+		bool Hit = CollisionRange(s_Enemy[i].pos);
+		if (Hit)
+		{
+			if (GetKeyboardTrigger(DIK_V))
+			{
+				s_Enemy[i].bRange = true;
+
+			}
 		}
 
 		// 現在のモーション番号の保管

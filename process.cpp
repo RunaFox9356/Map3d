@@ -19,7 +19,7 @@
 #include "light.h"
 #include "comn.h"
 #include "input.h"
-
+#include "range.h"
 //=========================================
 // 静的変数
 //=========================================
@@ -50,6 +50,7 @@ void InitProcess()
 	InitPallet();
 	InitPalletE();
 	InitSelect();
+	InitRange();
 	player.Init();
 }
 
@@ -67,6 +68,7 @@ void UninitProcess()
 	player.Uninit();
 	UninitPalletE();
 	UninitSelect();
+	UninitRange();
 }
 
 //-----------------------------------------
@@ -79,6 +81,7 @@ void UpdateProcess()
 	UpdateEnemy();
 	player.Update();
 	UpdateMap();
+	UpdateRange();
 	UpdateSelect(DebugNumber, s_DebugNumberEnemy);
 
 #ifdef _DEBUG
@@ -141,7 +144,7 @@ void DrawProcess()
 	DrawSelect();
 	DrawPallet();
 	DrawPalletE();
-
+	DrawRange();
 	// 2Dの前に3Dを置く
 	GetDevice()->Clear(0, NULL, (D3DCLEAR_ZBUFFER), D3DCOLOR_RGBA(0, 0, 0, 0), 1.0f, 0);
 	DrawEnemy();
@@ -271,6 +274,13 @@ void setDebugNumber(int inDebugNumber)
 	DebugNumber = inDebugNumber;
 }
 
+//---------------------------------------
+// 後変更
+//---------------------------------------
+void setEnemyNumber(int inDebugNumber)
+{
+	s_DebugNumberEnemy = inDebugNumber;
+}
 //---------------------------------------
 // デバックしてるかしないか
 //---------------------------------------

@@ -22,6 +22,7 @@
 #define NUM_MAP	    (2048)		//背景枚数
 #define X_MAP		(8)		//マップチップサイズX
 #define Y_MAP		(8)			//マップチップサイズY
+#define MAX_MAP		(X_MAP*Y_MAP)
 #define MAP_SIZEX	(100)		//マップサイズX
 #define MAP_SIZEY	(10)		//マップサイズY
 #define MAPYLENGTH	(10)		//マップの長さ

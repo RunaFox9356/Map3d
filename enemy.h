@@ -76,7 +76,7 @@ typedef struct
 	
 	bool		bMotionBlend;				// モーションブレンド
 	bool		bMotion;					// モーションを使用状況
-
+	bool		bRange;
 	bool		bSelect;
 	bool		isUse;						// 使ってるか使ってないか
 	bool		notLoop;					// ループするかしないか
