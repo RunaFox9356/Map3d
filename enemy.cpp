@@ -519,6 +519,7 @@ void LoadEnemy(void)
 			fscanf(pFile, "%s", fileName[fileCnt]);
 
 			Enemy* pEnemy = &s_EnemyType[fileCnt];
+			
 			if (pEnemy->isUse)
 			{
 				continue;
