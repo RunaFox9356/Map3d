@@ -7,7 +7,8 @@
 
 #include "range.h"
 #include "input.h"
-
+#include "comn.h"
+#include "camera.h"
 
 //スタティック変数
 static LPDIRECT3DVERTEXBUFFER9 s_pVtxBuffRange = NULL; //頂点バッファの設定
@@ -138,12 +139,24 @@ void DrawRange(void)
 bool CollisionRange(D3DXVECTOR3 pos)
 {
 	bool Hit = false;//チップとマウスの当たり判定が当たってる時
-	D3DXVECTOR3 mapPos;
+	D3DXVECTOR3 mapPosStart, mapPosEnd;
 
 	if (GetKeyboardPress(DIK_LSHIFT))
 	{
-		if (((s_aRange.pos.x > pos.x) && (s_aRange.posSet.x < pos.x)) &&
-			((s_aRange.pos.y > pos.y) && (s_aRange.posSet.y < pos.y)))
+		
+		Camera *pCamera = GetCamera();
+		mapPosStart = WorldCastScreen(&s_aRange.posSet,								// スクリーン座標
+			D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
+			&pCamera->mtxView,										// ビューマトリックス
+			&pCamera->mtxProjection);								// プロジェクションマトリックス
+
+		mapPosEnd = WorldCastScreen(&s_aRange.pos,								// スクリーン座標
+			D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
+			&pCamera->mtxView,										// ビューマトリックス
+			&pCamera->mtxProjection);								// プロジェクションマトリックス
+
+		if (((mapPosStart.x > pos.x) && (mapPosEnd.x < pos.x)) &&
+			((mapPosStart.y > pos.y) && (mapPosEnd.y < pos.y)))
 		{
 			Hit = true;
 		}

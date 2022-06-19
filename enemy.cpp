@@ -40,7 +40,6 @@ static float s_fMapScale;
 static float s_fLog;
 static D3DXVECTOR3 s_Move(5.0f, 0.0f, 0.0f);
 
-static int s_parts;	// パーツの最大数
 static int s_pow;	// ジャンプパワー
 static int s_nMotion; //
 
@@ -82,21 +81,21 @@ void UninitEnemy(void)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
 
-		for (int i = 0; i <= s_parts; i++)
+		for (int j = 0; j <= pEnemy->nParts; j++)
 		{
 			// 頂点バッファーの解放
-			if (pEnemy->parts[i].pBuffer != NULL)
+			if (pEnemy->parts[j].pBuffer != NULL)
 			{
-				pEnemy->parts[i].pBuffer->Release();
-				pEnemy->parts[i].pBuffer = NULL;
+				pEnemy->parts[j].pBuffer->Release();
+				pEnemy->parts[j].pBuffer = NULL;
 			}
 
-			if (pEnemy->parts[i].pMesh != NULL)
+			if (pEnemy->parts[j].pMesh != NULL)
 			{
-				pEnemy->parts[i].pMesh->Release();
-				pEnemy->parts[i].pMesh = NULL;
+				pEnemy->parts[j].pMesh->Release();
+				pEnemy->parts[j].pMesh = NULL;
 			}
-		}
+ 		}
 	}
 }
 
@@ -117,7 +116,7 @@ void UpdateEnemy(void)
 		D3DXVECTOR3 Mouse = GetMouse();
 		if (s_Enemy[i].bRange)
 		{
-			pEnemy->scale = D3DXVECTOR3(1.2f,1.2f,1.2f);
+			pEnemy->scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
 
 			s_Enemy[i].pos = s_Enemy[i].posOld + Mouse;
 
@@ -388,42 +387,6 @@ void  Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber)
 	s_nMotion++;
 }
 
-//-------------------------------
-//コピーを処理
-//-------------------------------
-void SetCopy(void)
-{
-	for (int i = 0; i < MAX_ENEMY; i++)
-	{
-		Enemy* pEnemy = &s_Enemy[i];
-
-		if (!pEnemy->isUse)
-		{
-			continue;
-		}
-
-		s_nMotion = 0;
-		if (s_parts >= 8)
-		{
-			s_parts = 7;
-		}
-
-		switch (pEnemy->copy)
-		{
-		case CPlayer::COPY_SWORD:
-			break;
-		case CPlayer::COPY_FIRE:
-			break;
-		case CPlayer::COPY_LASER:
-			break;
-		case CPlayer::COPY_CUTTER:
-			break;
-		default:
-			break;
-		}
-	}
-}
-
 //----------------------
 // ゲット(構造体)
 //----------------------
@@ -679,8 +642,10 @@ void LoadEnemy(void)
 
 				// 頂点バッファのアンロック
 				pParts->pMesh->UnlockVertexBuffer();
+				pEnemy->nParts++;
 			}
 			fileCnt++;
+
 		}
 	}
 }

@@ -54,8 +54,6 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window);
 int Button(int nSize);
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-D3DPRESENT_PARAMETERS    g_d3dpp = {};
-ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 //===================
 //ÉÅÉCÉìä÷êî
@@ -824,7 +822,7 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 		if (show_demo_window)
 		{
 			int MapSet = GetDebugNumber();
-			setDebugNumber(MapSet);
+	
 
 			ImGui::Begin("MapMode");                          // Create a window called "Hello, world!" and append into it.
 
@@ -833,24 +831,16 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Another Window", &show_another_window);
 
-			ImGui::SliderInt("Type", &MapSet, 0, MAX_MAP);
+			ImGui::SliderInt("Type", &MapSet, 0, MAX_MAP/2);
 
 
 
 			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-			MapSet = Button(MapSet);
-
-			static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
-			ImGui::Bezier("Ç†Ç†Ç†", v);       // draw
-			float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
-
-			{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
-
 
 			ImGui::SameLine();
-
+			setDebugNumber(MapSet);
 			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
@@ -866,42 +856,31 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 			}
 			ImGui::End();
 		}
+	
 	}
 	else
 	{
 		// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		if (show_demo_window)
 		{
-			int EnemySet = GetDebugNumber();
-			setEnemyNumber(EnemySet);
-
-	
+			int EnemySet = GetDebugNumberEnemy();
 
 			ImGui::Begin("EnemyMode");                          // Create a window called "Hello, world!" and append into it.
 
 			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too
 			ImGui::InputText("textbox 1", Txet, sizeof(Txet));
-			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+
 			ImGui::Checkbox("Another Window", &show_another_window);
 
 			ImGui::SliderInt("Type", &EnemySet, 0, 10);
 
-
+			//EnemySet = Button(EnemySet);
 
 			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-			EnemySet = Button(EnemySet);
-
-			static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
-			ImGui::Bezier("Ç†Ç†Ç†", v);       // draw
-			float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
-
-			{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
-
-
 			ImGui::SameLine();
-
+			setEnemyNumber(EnemySet);
 			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			ImGui::End();
 		}
@@ -915,6 +894,15 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 			{
 				show_another_window = false;
 			}
+
+	
+
+			static float v[] = { 0.390f, 0.575f, 0.565f, 1.000f };
+			ImGui::Bezier("Ç†Ç†Ç†", v);       // draw
+			float y = ImGui::BezierValue(0.5f, v); // x delta in [0..1] range
+
+			{ static float v[] = { 0.680f, -0.55f, 0.265f, 1.550f }; ImGui::Bezier("easeInOutBack", v); }
+
 			ImGui::End();
 		}
 	}

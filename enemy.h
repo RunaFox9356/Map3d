@@ -71,9 +71,9 @@ typedef struct
 	int			nMaxMotion;					// モーション数
 
 	int			nInvincible;				// 無敵時間
+	int			nParts;	// パーツの最大数
 	float		fConsumption;				// 計算用
 	float		fLog;
-	
 	bool		bMotionBlend;				// モーションブレンド
 	bool		bMotion;					// モーションを使用状況
 	bool		bRange;
@@ -91,11 +91,10 @@ void DrawEnemy(void);	// 描画
 void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type);//セット引数座標と読み込むファイル名
 void SizeSet(void);//当たり判定取得
 Enemy *GetEnemy(void);//ゲット
-CPlayer::MODELDATAPLAYER *GetModelDataEnemy(void);//motionデータのゲット
 void LoadEnemy(void);	// 読込
 void LoadSetFile(char *Filename);
 void OutputEnemy(char *Filename);
-void ConversionDes(D3DXVECTOR3 Mouse);
+
 void SelectDes(D3DXVECTOR3 pos);
 //void falseSetEnemy(void);
 //void selectDes(D3DXVECTOR3 Mouse, D3DXVECTOR3 Size);

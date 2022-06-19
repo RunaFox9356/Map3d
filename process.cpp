@@ -181,7 +181,7 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 	//------------------------
 	//エネミのセット
 	//------------------------
-	if (GetMouseTrigger(MOUSE_INPUT_LEFT))
+	if (GetMouseTrigger(MOUSE_INPUT_LEFT)&& !GetKeyboardPress(DIK_LSHIFT))
 	{//
 		bool Hit = CollisionMap(Mouse);
 		if (Hit)
