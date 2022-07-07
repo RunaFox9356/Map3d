@@ -1,38 +1,71 @@
-//=========================================
-// 
-// ポリゴンの作成(ヘッダーファイル)
-// Author YudaKaito
-// 
-//=========================================
+//============================
+//
+// カメラ設定ヘッター
+// Author:hamada ryuuga
+//
+//============================
+
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
-//------------------------------------
-// カメラの構造体
-//------------------------------------
+#include "main.h"
+
+#define MAX_CAMERAKEY (3)
+//構造体
 typedef struct
 {
-	D3DXVECTOR3 posV;			// 視点
-	D3DXVECTOR3 posR;			// 注視点
-	D3DXVECTOR3 posRDest;		// 視点の目的値
-	D3DXVECTOR3 posVDest;		// 注視点の目的値
-	D3DXVECTOR3 vec;			// 移動量
-	D3DXVECTOR3 rot;			// 向き
-	D3DXVECTOR3 rotDest;		// 向きの目的地
-	D3DXVECTOR3 vecU;			// 上方向ベクトル
-	D3DXMATRIX mtxProjection;	// プロジェクトマトリックス
-	D3DXMATRIX mtxView;			// ビューマトリックス
-	float fDistance;			// 視点から注視点の距離
-	float fHeight;
-}Camera;
+	D3DXVECTOR3 posV;	//位置
+	D3DXVECTOR3 posR;	//注視点
+	D3DXVECTOR3 vecU;	//ベクトル
+	D3DXVECTOR3 directionV; //回転の向き位置
+	D3DXVECTOR3 directionR;//回転の向き注視点
+	D3DXVECTOR3 rot;//位置回転
+	float fDistance;//距離
+	float fDistanceY;
+	bool bBool;
+	bool bStartBool;
+	D3DVIEWPORT9 viewport;
+	D3DXVECTOR3 posVDest, posRDest;
+	D3DXMATRIX MtxProje; //プロジェクションマトリックス//ポリゴンの位置や回転行列すべてをつめてるナニカ
+	D3DXMATRIX MtxView; //ビューマトリックス//ポリゴンの位置や回転行列すべてをつめてるナニカ
+}CAMERA;
 
-//------------------------------------
-// プロトタイプ宣言
-//------------------------------------
-void InitCamera(void);			// カメラの初期化処理
-void UninitCamera(void);		// カメラの終了処理
-void UpdateCamera(void);		// カメラの更新処理
-void SetCamera();				// カメラの設定処理
-Camera* GetCamera();			// カメラの情報取得
+class CCamera
+{
+public:
+	CCamera();
+	~CCamera();
 
-#endif // !_CAMERA_H_
+	void Init();//初期化
+	void Uninit();//破棄
+	void Update();//更新
+	void Set();//画面設定
+	CAMERA *Get(); //ゲット
+	D3DXMATRIX *GetMtxProje();
+	D3DXMATRIX *GetMtxView();
+	
+private:
+	float m_Speed = 1.0f;
+
+	float m_rotSpeed = 0.05f;
+	float m_rotSpeed2 = D3DX_PI / 2;
+
+	D3DXVECTOR3 posVlog[MAX_CAMERAKEY];
+	D3DXVECTOR3 posRlog[MAX_CAMERAKEY];
+	
+	D3DXVECTOR3 posOriginV;
+	D3DXVECTOR3 posOriginR;
+
+	D3DXVECTOR3 posVDest;
+	D3DXVECTOR3	posRDest;
+
+	int keySet[MAX_CAMERAKEY];
+	int m_moveCount;
+	int m_nCntFrame;
+	int m_next;
+	//スタティック変数
+	CAMERA m_aCamera;
+	float m_rot;
+};
+
+#endif

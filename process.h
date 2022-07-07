@@ -11,6 +11,8 @@
 // include
 //=========================================
 
+class CEnemy;
+
 //=========================================
 // プロトタイプ宣言
 //=========================================
@@ -27,5 +29,7 @@ void ChangeDebug(bool inDebug);				// 取得
 bool GetEnemyAlignment();
 int GetDebugNumberEnemy();			//デバックナンバー（Enemy）
 int GetDebugNumber();				//デバックナンバー（プレイヤー）
+
+CEnemy *GetEnemy();
 
 #endif // !_DEBUG_H_

@@ -35,6 +35,7 @@
 #define WORLDSIZ (100.0f)
 #define ZERO_VECTOR		(D3DXVECTOR3(0.0f, 0.0f, 0.0f))		// ゼロベクトル
 #define ZERO_QUATERNION	(D3DXQUATERNION(0.0f,0.0f,0.0f,1.0f))
+class CCamera;
 
 //=========================================
 //頂点情報「２ｄ」の構造体を定義
@@ -83,7 +84,8 @@ void Uninit(void);				// 破棄
 void Update(HWND hWnd);			// 更新
 void Draw(void);				// 描画
 int GetFPS();					// FPSの取得
-
+CCamera *GetCamera();
+int GetCameraSystem();
 //=========================================
 //セットの設定まとめ
 //=========================================

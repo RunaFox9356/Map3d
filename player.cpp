@@ -77,7 +77,7 @@ CPlayer::~CPlayer()
 void CPlayer::Init(void)
 {
 	//カメラのデータ取得
-	Camera *pCamera = GetCamera();
+	CAMERA *pCamera = GetCamera()->Get();
 	m_rotMove = D3DXVECTOR3(D3DX_PI + pCamera->rot.y, D3DX_PI * 0.5f + pCamera->rot.y, 0.0f);
 
 	m_modelMin = D3DXVECTOR3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -413,7 +413,7 @@ void CPlayer::Move(void)
 	}
 
 	//ゲームの時の移動方法
-	Camera *pCamera = GetCamera();
+	CAMERA *pCamera = GetCamera()->Get();
 	m_consumption = 0.0f;
 
 	if (GetJoypadStick(JOYKEY_LEFT_STICK, 0).x > 0.5f)

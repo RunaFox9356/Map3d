@@ -144,16 +144,17 @@ bool CollisionRange(D3DXVECTOR3 pos)
 	if (GetKeyboardPress(DIK_LSHIFT))
 	{
 		
-		Camera *pCamera = GetCamera();
+		CAMERA *pCamera = GetCamera()->Get();
+
 		mapPosStart = WorldCastScreen(&s_aRange.posSet,								// スクリーン座標
 			D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-			&pCamera->mtxView,										// ビューマトリックス
-			&pCamera->mtxProjection);								// プロジェクションマトリックス
+			&pCamera->MtxView,										// ビューマトリックス
+			&pCamera->MtxProje);								// プロジェクションマトリックス
 
 		mapPosEnd = WorldCastScreen(&s_aRange.pos,								// スクリーン座標
 			D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-			&pCamera->mtxView,										// ビューマトリックス
-			&pCamera->mtxProjection);								// プロジェクションマトリックス
+			&pCamera->MtxView,										// ビューマトリックス
+			&pCamera->MtxProje);								// プロジェクションマトリックス
 
 		if (((mapPosStart.x > pos.x) && (mapPosEnd.x < pos.x)) &&
 			((mapPosStart.y > pos.y) && (mapPosEnd.y < pos.y)))

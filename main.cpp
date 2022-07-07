@@ -49,11 +49,17 @@ ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 bool show_demo_window = true;//基本の呼び出し
 bool show_another_window = false;//もう一つ呼び出し
 static char Txet[8] = "";
+
+int camera = 0;//もう一つ呼び出し
+
+
 void ResetDevice();
 bool ImGuiTxet(bool show_demo_window, bool show_another_window);
 int Button(int nSize);
 // Forward declare message handler from imgui_impl_win32.cpp
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+CCamera* pCamera;
 
 //===================
 //メイン関数
@@ -72,12 +78,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 		0,															// ゼロにする
 		0,															// ゼロにする
 		hInstance,													// インスタンスハンドル
-		LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPLICATION)),		// タスクバーのアイコン
+		LoadIcon(hInstance, IDI_APPLICATION),		// タスクバーのアイコン
 		LoadCursor(NULL, IDC_ARROW),								// マウスカーソル
 		(HBRUSH)(COLOR_WINDOW + 1),									// クライアントの領域背景色
 		MAKEINTRESOURCE(IDR_MENU1) ,								// メニューバー
 		CLASS_NAME,													// Windowクラスの名前
-		LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_APPLICATION))	// ファイルアイコン
+		LoadIcon(wcex.hInstance, IDI_APPLICATION)	// ファイルアイコン
 	};
 
 	//ウインドウクラスの登録
@@ -222,8 +228,8 @@ static void funcFileSave(HWND hWnd, bool nMap)
 		ofn.lpstrInitialDir = szPath;	// 初期フォルダ位置
 		ofn.lpstrFile = szFile;			// 選択ファイル格納
 		ofn.nMaxFile = MAX_PATH;
-		ofn.lpstrDefExt = TEXT(".txt");
-		ofn.lpstrFilter = TEXT("txtファイル(*.txt)\0*.txt\0");
+		ofn.lpstrDefExt = TEXT(".json");
+		ofn.lpstrFilter = TEXT("jsonファイル(*.json)\0*.json\0");
 		ofn.lpstrTitle = TEXT("テキストファイルを保存します。");
 		ofn.Flags = OFN_FILEMUSTEXIST | OFN_OVERWRITEPROMPT;
 	}
@@ -239,7 +245,7 @@ static void funcFileSave(HWND hWnd, bool nMap)
 		}
 		if (!nMap)
 		{
-			OutputEnemy(szFile);
+			GetEnemy()->OutputEnemy(szFile);
 		}
 	}
 	bPress = true;
@@ -423,7 +429,8 @@ HRESULT Init(HINSTANCE hInstance, HWND hWnd, BOOL bWindow)//TRUE：ウインドウ/FAL
 		return E_FAIL;
 	}
 
-
+	pCamera = new CCamera;
+	pCamera->Init();
 
 	//乱数の初期化
 	srand((unsigned int)time(0));
@@ -462,6 +469,13 @@ void Uninit(void)
 		s_pD3DDevice->Release();
 		s_pD3DDevice = NULL;
 	}
+	// カメラ終了処理
+	if (pCamera != nullptr)
+	{
+		pCamera->Uninit();
+		delete pCamera;
+		pCamera = nullptr;
+	}
 }
 
 //---------------------------------------
@@ -472,6 +486,7 @@ void Update(HWND hWnd)
 	//更新処理
 	UpdateInput();
 	UpdateProcess();
+	pCamera->Update();
 }
 
 //---------------------------------------
@@ -497,8 +512,8 @@ void Draw(void)
 
 	 //HRESULT result = g_pD3DDevice->Present(NULL, NULL, NULL, NULL);
 
+		pCamera->Set();
 		DrawProcess();
-
 
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
@@ -816,16 +831,25 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 	ImGui::NewFrame();
 	bool SetMode = GetSetMode();				// 取得
 
+
+
+	ImGui::Begin("CameraSystem");                          // Create a window called "Hello, world!" and append into it.
+
+
+	ImGui::SliderInt("Number", &camera, 0, 10);
+
+	ImGui::End();
 	if (!SetMode)
 	{
 		// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		if (show_demo_window)
 		{
 			int MapSet = GetDebugNumber();
-	
+			CAMERA *pCamera = GetCamera()->Get();
 
 			ImGui::Begin("MapMode");                          // Create a window called "Hello, world!" and append into it.
 
+			ImGui::Text("(%.1f PosV)(%.1f PosR)", pCamera->posV.x, pCamera->posR.x);
 			ImGui::Text("Y debug |A ModeChange |LCONTROL PALLET | MOUSE_INPUT_LEFT Change");               // Display some text (you can use a format strings too
 			ImGui::InputText("textbox 1", Txet, sizeof(Txet));
 			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
@@ -861,6 +885,7 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 
 			ImGui::SliderInt("Type", &EnemySet, 0, 10);
 
+			
 			//EnemySet = Button(EnemySet);
 
 			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
@@ -895,4 +920,19 @@ int Button(int nSize)
 		nSize -= 5;
 	}
 	return nSize;
+}
+//=============================================================================
+// GetCamera関数
+//=============================================================================
+CCamera *GetCamera()
+{
+	return pCamera;
+}
+
+//=============================================================================
+// GetCameraSystem関数
+//=============================================================================
+int GetCameraSystem()
+{
+	return camera;
 }

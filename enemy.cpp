@@ -18,56 +18,45 @@
 #include "comn.h"
 #include "range.h"
 
-//--------------------------------------------------
-// マクロ定義
-#define MAX_ENEMY	(100)	// 最大エネミー数
-#define SIZE_ENEMY (D3DXVECTOR3(50.0f,50.0f,0.0f))
-//#define ATTENUATION	(0.5f)		//減衰係数
-//#define SPEED	(1.0f)			//スピード
-#define WIDTH (10.0f)			//モデルの半径
-#define MAX_PRAYER (16)			//最大数
-#define MAX_MOVE (9)			//アニメーションの最大数
-#define INVINCIBLE (300)		//無敵時間
+#include "file.h"
+#include "letter.h"
 
-//--------------------------------------------------
-// 静的変数
-//--------------------------------------------------
-static Enemy s_Enemy[MAX_ENEMY];		// エネミーの構造体
-static Enemy s_EnemyType[ENEMY_TYPE_MAX];	// エネミー種別の構造体
-static CPlayer::MODELDATAPLAYER s_ModelData[MAX_MOVE];
 
-static float s_fMapScale;
-static float s_fLog;
-static D3DXVECTOR3 s_Move(5.0f, 0.0f, 0.0f);
+//Particle DataEffect;
+namespace nl = nlohmann;
 
-static int s_pow;	// ジャンプパワー
-static int s_nMotion; //
+static nl::json j;//リストの生成
 
-//--------------------------------------------------
-// プロトタイプ宣言
-//--------------------------------------------------
-static void Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber);	// モーションの読込
-static void AnimationSet(int animation);						// アニメーションの計算
-static void MoveSet(void);										// ムーブセット
-static void Collision(void);									// 当たり判定まとめ
-static void SetCopy(void);
+CEnemy::CEnemy(void)
+{
+	
+
+}
+
+CEnemy::~CEnemy(void)
+{
+}
 
 //==================================================
 // 初期化処理
 //==================================================
-void InitEnemy(void)
+void CEnemy::Init(void)
 {
 	// カメラのデータ取得
-	Camera *pCamera = GetCamera();
+	CAMERA *pCamera = GetCamera()->Get();
 
 	s_pow = 0;
 	
 	// 初期化処理
 	memset(&s_Enemy, NULL, sizeof(s_Enemy));
 
-	// 読込
-	LoadEnemy();
+	for (int i = 0; i < MAX_ENEMY; i++)
+	{
+		Enemy* pEnemy = &s_Enemy[i];
 
+		pEnemy->rot.y = D3DX_PI*0.5f;
+
+	}
 	s_fLog = 0.0f;
 	s_fMapScale = 1.0f;
 }
@@ -75,13 +64,13 @@ void InitEnemy(void)
 //=========================================
 // 終了処理
 //=========================================
-void UninitEnemy(void)
+void  CEnemy::Uninit(void)
 {
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
 		Enemy* pEnemy = &s_Enemy[i];
 
-		for (int j = 0; j <= pEnemy->nParts; j++)
+		for (int j = 0; j < pEnemy->nParts; j++)
 		{
 			// 頂点バッファーの解放
 			if (pEnemy->parts[j].pBuffer != NULL)
@@ -92,8 +81,6 @@ void UninitEnemy(void)
 
 			if (pEnemy->parts[j].pMesh != NULL)
 			{
-				pEnemy->parts[j].pMesh->Release();
-				pEnemy->parts[j].pMesh = NULL;
 			}
  		}
 	}
@@ -102,7 +89,7 @@ void UninitEnemy(void)
 //=========================================
 // 更新処理
 //=========================================
-void UpdateEnemy(void)
+void  CEnemy::Update(void)
 {
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
@@ -116,7 +103,7 @@ void UpdateEnemy(void)
 		D3DXVECTOR3 Mouse = GetMouse();
 		if (s_Enemy[i].bRange)
 		{
-			pEnemy->scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
+			//pEnemy->scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
 
 			s_Enemy[i].pos = s_Enemy[i].posOld + Mouse;
 
@@ -124,7 +111,7 @@ void UpdateEnemy(void)
 		else
 		{
 			s_Enemy[i].posOld = s_Enemy[i].pos - Mouse;
-			pEnemy->scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
+		//	pEnemy->scale = D3DXVECTOR3(1.0f, 1.0f, 1.0f);
 			//s_Move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 		}
 
@@ -160,11 +147,11 @@ void UpdateEnemy(void)
 			int wheel = GetMouseWheel();
 			if (wheel > 0)
 			{
-				pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;				
+				//pEnemy->pos += s_Move * MAPMOVE / s_fMapScale;				
 			}
 			else if (wheel < 0)
 			{
-				pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
+				//pEnemy->pos -= s_Move * MAPMOVE / s_fMapScale;
 			}
 		}
 
@@ -221,12 +208,12 @@ void UpdateEnemy(void)
 		int wheel = GetMouseWheel();
 		if (wheel > 0)
 		{	
-			s_fLog += s_Move.x * MAPMOVE / s_fMapScale;
+			//s_fLog += s_Move.x * MAPMOVE / s_fMapScale;
 
 		}
 		else if (wheel < 0)
 		{
-			s_fLog -= s_Move.x * MAPMOVE / s_fMapScale;
+			//s_fLog -= s_Move.x * MAPMOVE / s_fMapScale;
 		}
 	}
 	
@@ -235,7 +222,7 @@ void UpdateEnemy(void)
 //=========================================
 // 描画処理
 //=========================================
-void DrawEnemy(void)
+void  CEnemy::Draw(void)
 {
 	LPDIRECT3DDEVICE9 pDevice = GetDevice();
 	D3DXMATRIX mtxScale, mtxTrans, mtxRot;	// 計算用マトリックス
@@ -295,10 +282,12 @@ void DrawEnemy(void)
 //=========================================
 // 設定
 //=========================================
-void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
+void  CEnemy::SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 {
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
+
+		//s_Enemy[i] = s_EnemyType[type];
 		Enemy* pEnemy = &s_Enemy[i];
 
 		if (pEnemy->isUse)
@@ -306,20 +295,20 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 			continue;
 		}
 
-		LoadEnemy();
 
 		*pEnemy = s_EnemyType[type];
+		LoadEnemy(pEnemy);
 		// プレイヤー情報の初期化
 		pEnemy->pos = pos;									// 位置の初期化
 		pEnemy->posOld = pEnemy->pos;						// 過去位置の初期化
-		pEnemy->rot = rot;									// 向きの初期化
+		//pEnemy->rot = rot;									// 向きの初期化
 		pEnemy->fLog = s_fLog;
 		pEnemy->mtxWorld = {};								// ワールドマトリックス
 		pEnemy->motionType = CPlayer::ANIME_NORMAL;					// ニュートラルモーション
 		pEnemy->motionTypeOld = pEnemy->motionType;			// 前回のモーション
 		pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
 		pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
-		pEnemy->isUse = true;								// 使用状況
+		//pEnemy->isUse = true;								// 使用状況
 
 		break;
 	}
@@ -328,7 +317,7 @@ void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 //--------------------------
 //当たり判定のサイズせってい
 //--------------------------
-void SizeSet(void)
+void  CEnemy::SizeSet(void)
 {
 
 }
@@ -336,7 +325,7 @@ void SizeSet(void)
 //------------------------------
 //アニメーションセット
 //-------------------------------
-void AnimationSet(int animation)
+void  CEnemy::AnimationSet(int animation)
 {
 
 }
@@ -344,7 +333,7 @@ void AnimationSet(int animation)
 //------------------------------
 //動きセット
 //-------------------------------
-void MoveSet(void)
+void  CEnemy::MoveSet(void)
 {
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
@@ -360,7 +349,7 @@ void MoveSet(void)
 //-------------------------------
 //当たり判定まとめ
 //-------------------------------
-void Collision(void)
+void  CEnemy::Collision(void)
 {
 	for (int i = 0; i < MAX_ENEMY; i++)
 	{
@@ -381,7 +370,7 @@ void Collision(void)
 //-------------------------------
 //モーションをロードする処理
 //-------------------------------
-void  Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber)
+void   CEnemy::Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber)
 {
 	s_ModelData[s_nMotion] = *set;
 	s_nMotion++;
@@ -390,7 +379,7 @@ void  Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber)
 //----------------------
 // ゲット(構造体)
 //----------------------
-Enemy *GetEnemy(void)
+Enemy * CEnemy::GetEnemy(void)
 {
 	return s_Enemy;
 }
@@ -398,7 +387,7 @@ Enemy *GetEnemy(void)
 //----------------------
 // 読込
 //----------------------
-void LoadSetFile(char *Filename)
+void  CEnemy::LoadSetFile(char *Filename)
 {
 	FILE *pFile = fopen(Filename, "r");
 	if (pFile == NULL)
@@ -476,18 +465,19 @@ void LoadSetFile(char *Filename)
 			}
 		}
 	}
+	fclose(pFile);
 }
 
 //----------------------
 // 読込
 //----------------------
-void LoadEnemy(void)
+void  CEnemy::LoadEnemy(Enemy * pEnemy)
 {
 	FILE *pFile = fopen("Data/system/enemy/enemy.txt", "r");
 
 	if (pFile == NULL)
 	{//ファイルが開いた場合
-		assert(false);
+		//assert(false);
 		return;
 	}
 
@@ -518,7 +508,7 @@ void LoadEnemy(void)
 			fscanf(pFile, "%s", &aEqual[0]);
 			fscanf(pFile, "%s", fileName[fileCnt]);
 
-			Enemy* pEnemy = &s_EnemyType[fileCnt];
+			pEnemy = &s_EnemyType[fileCnt];
 			
 			if (pEnemy->isUse)
 			{
@@ -526,10 +516,11 @@ void LoadEnemy(void)
 			}
 
 			// プレイヤー情報の初期化
+			pEnemy->scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
 			pEnemy->pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);	// 位置の初期化
 			pEnemy->posOld = pEnemy->pos;					// 過去位置の初期化
 			pEnemy->fLog = s_fLog;
-			pEnemy->rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);;	// 向きの初期化
+			pEnemy->rot = D3DXVECTOR3(0.0f, D3DX_PI*0.5f, 0.0f);;	// 向きの初期化
 			pEnemy->modelMin = D3DXVECTOR3(FLT_MAX, FLT_MAX, FLT_MAX);		// 頂点座標の最小値
 			pEnemy->modelMax = D3DXVECTOR3(-FLT_MAX, -FLT_MAX, -FLT_MAX);	// 頂点座標の最大値
 			pEnemy->mtxWorld = {};								// ワールドマトリックス
@@ -649,58 +640,65 @@ void LoadEnemy(void)
 
 		}
 	}
+	fclose(pFile);
 }
+
+
 //----------------------------
 //ファイルの入力マップ情報
 //----------------------------
-void OutputEnemy(char *Filename)
+void  CEnemy::OutputEnemy(char *Filename)
 {
 
-	D3DXVECTOR3 pos;
-	//ファイル開け
-	FILE *pFile = fopen(Filename, "w");
-	if (pFile == NULL)
-	{
-		assert(false);
-	}
-	fprintf(pFile, "#-----------------------\n");
-	fprintf(pFile, "#エネミーの設定スクリプト\n");
-	fprintf(pFile, "#Author:hamada ryuuga\n");
-	fprintf(pFile, "#-----------------------\n");
-
-	fprintf(pFile, "SCRIPT #ここ消さない\n\n");
-
-	fprintf(pFile, "\n# ここから敵の座標などの設定\n\n");
+	int nIndex = 0;
 
 	for (int nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++)
 	{
 		
 		if (s_Enemy[nCntEnemy].isUse)
 		{
-			//s_Enemy[nCntEnemy].pos.y += Log;
-			fprintf(pFile, "SET_ENEMY\n");
-			fprintf(pFile, "TYPE = %d\n", s_Enemy[nCntEnemy].type);
-			fprintf(pFile, "POS = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].pos.x - s_fLog, s_Enemy[nCntEnemy].pos.y, s_Enemy[nCntEnemy].pos.z);
-			fprintf(pFile, "SIZE = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].scale.x, s_Enemy[nCntEnemy].scale.y, s_Enemy[nCntEnemy].scale.z);
-			fprintf(pFile, "ROT = %.4f %.4f %.4f\n", s_Enemy[nCntEnemy].rot.x, s_Enemy[nCntEnemy].rot.y, s_Enemy[nCntEnemy].rot.z);
-			fprintf(pFile, "END_SET\n");
-			fprintf(pFile, "\n");
+			std::string name = "ENEMY";
+			std::string Number = std::to_string(nIndex);
+			name += Number;
+			j[name] = {
+			{"POS",{
+				{ "X", s_Enemy[nCntEnemy].pos.x - s_fLog } ,
+				{ "Y", s_Enemy[nCntEnemy].pos.y } ,
+				{ "Z", s_Enemy[nCntEnemy].pos.z }}},
+			{"SIZE",{
+				{ "X", s_Enemy[nCntEnemy].scale.x } ,
+				{ "Y", s_Enemy[nCntEnemy].scale.y } ,
+				{ "Z", s_Enemy[nCntEnemy].scale.z }}},
+			{"ROT", {
+				{ "X", s_Enemy[nCntEnemy].rot.x } ,
+				{ "Y", s_Enemy[nCntEnemy].rot.y } ,
+				{ "Z", s_Enemy[nCntEnemy].rot.z }}} ,
+			{"TYPE",  (int)s_Enemy[nCntEnemy].type} };
+			nIndex++;
+			
 		}
 	}
+	j["INDEX"] = nIndex;
 
-	fprintf(pFile, "END_SCRIPT #ここ消さない");
-	fclose(pFile);
+	auto jobj = j.dump();
+	std::ofstream writing_file;
+	const std::string pathToJSON = Filename;
+	writing_file.open(pathToJSON, std::ios::out);
+	writing_file << jobj << std::endl;
+	writing_file.close();
+
+
 }
 //----------------------------
 //エネミ-のサイズと座標とタイプを変更する
 //----------------------------
-void SelectDes(D3DXVECTOR3 pos)
+void  CEnemy::SelectDes(D3DXVECTOR3 pos)
 {
-	Camera *pCamera = GetCamera();
+	CAMERA *pCamera = GetCamera()->Get();
 	pos = WorldCastScreen(&pos,								// スクリーン座標
 		D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-		&pCamera->mtxView,										// ビューマトリックス
-		&pCamera->mtxProjection);								// プロジェクションマトリックス
+		&pCamera->MtxView,										// ビューマトリックス
+		&pCamera->MtxProje);								// プロジェクションマトリックス
 
 	D3DXVECTOR3 enemyPos;
 	for (int nCntEnemy = 0; nCntEnemy < MAX_ENEMY; nCntEnemy++)
@@ -718,9 +716,18 @@ void SelectDes(D3DXVECTOR3 pos)
 				((s_Enemy[nCntEnemy].pos.y - Size.y*2* s_fMapScale < pos.y) && (s_Enemy[nCntEnemy].pos.y + Size.y * 2 * s_fMapScale > pos.y)))
 			{
 				//マウスカーソル合わさってたらサイズ変更がかかる
-				s_Enemy[nCntEnemy].scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
+				//s_Enemy[nCntEnemy].scale = D3DXVECTOR3(2.0f, 2.0f, 2.0f);
 				if (GetKeyboardPress(DIK_LCONTROL))
 				{//CONTROL押しながら
+					int wheel = GetMouseWheel();
+					if (wheel > 0 && !s_Enemy[nCntEnemy].bSelect)
+					{//マウスホイール回すとサイズ変更
+						s_Enemy[nCntEnemy].scale += D3DXVECTOR3(0.1f, 0.1f, 0.1f);
+					}
+					else if (wheel < 0 && !s_Enemy[nCntEnemy].bSelect)
+					{
+						s_Enemy[nCntEnemy].scale -= D3DXVECTOR3(0.1f, 0.1f, 0.1f);
+					}
 					
 				}
 				if (GetKeyboardTrigger(DIK_Z))
@@ -732,10 +739,12 @@ void SelectDes(D3DXVECTOR3 pos)
 					s_Enemy[nCntEnemy].isUse = false;
 					s_Enemy[nCntEnemy].pos = D3DXVECTOR3(NULL, NULL, NULL);
 				}
+
+
 			}
 			else
 			{
-				s_Enemy[nCntEnemy].scale = D3DXVECTOR3(1.8f, 1.8f, 1.8f);
+				//s_Enemy[nCntEnemy].scale = D3DXVECTOR3(1.8f, 1.8f, 1.8f);
 			}
 
 		}

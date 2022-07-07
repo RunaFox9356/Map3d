@@ -30,7 +30,7 @@ static float Size = 1.0f;
 static bool EnemyMode = false;					// MapいじるかEnemyいじるか
 static bool s_bDebug;							// デバッグ中か否か
 static CPlayer player;
-
+static CEnemy enemy;
 //=========================================
 // プロトタイプ宣言
 //=========================================
@@ -43,9 +43,9 @@ static void MapSetSystem(D3DXVECTOR3 Mouse);	// マップの挙動
 void InitProcess()
 {
 	InitLight();
-	InitCamera();
+
 	InitBG();
-	InitEnemy();
+	enemy.Init();
 	InitMap();
 	InitPallet();
 	InitPalletE();
@@ -59,10 +59,10 @@ void InitProcess()
 //-----------------------------------------
 void UninitProcess()
 {
-	UninitCamera();
+	
 	UninitLight();
 	UninitBG();
-	UninitEnemy();
+	enemy.Uninit();
 	UninitMap();
 	UninitPallet();
 	player.Uninit();
@@ -76,9 +76,9 @@ void UninitProcess()
 //-----------------------------------------
 void UpdateProcess()
 {
-	UpdateCamera();	// カメラ
+
 	UpdateBG();
-	UpdateEnemy();
+	enemy.Update();
 	player.Update();
 	UpdateMap();
 	UpdateRange();
@@ -87,7 +87,7 @@ void UpdateProcess()
 #ifdef _DEBUG
 	if (GetKeyboardTrigger(DIK_U))
 	{//敵の座標をロードする（モデルビュアー式）
-		LoadSetFile("Data\\hoge2.txt");
+		enemy.LoadSetFile("Data\\hoge2.txt");
 	}
 
 	if (s_bDebug)
@@ -137,7 +137,7 @@ void UpdateProcess()
 //-----------------------------------------
 void DrawProcess()
 {
-	SetCamera();	// カメラ
+
 	DrawBG();
 	DrawMap();
 	DrawPallet();
@@ -147,7 +147,7 @@ void DrawProcess()
 	DrawRange();
 	// 2Dの前に3Dを置く
 	GetDevice()->Clear(0, NULL, (D3DCLEAR_ZBUFFER), D3DCOLOR_RGBA(0, 0, 0, 0), 1.0f, 0);
-	DrawEnemy();
+	enemy.Draw();
 	player.Draw();
 }
 
@@ -189,27 +189,27 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 			if (EnemyAlignment)
 			{
 				D3DXVECTOR3 BLOCK = EnemyMap(Mouse*Size);
-				Camera *pCamera = GetCamera();
+				CAMERA *pCamera = GetCamera()->Get();
 				BLOCK = WorldCastScreen(&BLOCK,								// スクリーン座標
 					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-					&pCamera->mtxView,										// ビューマトリックス
-					&pCamera->mtxProjection);
+					&pCamera->MtxView,										// ビューマトリックス
+					&pCamera->MtxProje);
 
-				SetEnemy(D3DXVECTOR3(BLOCK.x, BLOCK.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)s_DebugNumberEnemy);
+				enemy.SetEnemy(D3DXVECTOR3(BLOCK.x, BLOCK.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)s_DebugNumberEnemy);
 			}
 			else
 			{
-				Camera *pCamera = GetCamera();
+				CAMERA *pCamera = GetCamera()->Get();
 				Mouse = WorldCastScreen(&Mouse,								// スクリーン座標
 					D3DXVECTOR3(SCREEN_WIDTH, SCREEN_HEIGHT, 0.0f),			// スクリーンサイズ
-					&pCamera->mtxView,										// ビューマトリックス
-					&pCamera->mtxProjection);								// プロジェクションマトリックス
+					&pCamera->MtxView,										// ビューマトリックス
+					&pCamera->MtxProje);								// プロジェクションマトリックス
 
-				SetEnemy(D3DXVECTOR3(Mouse.x, Mouse.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)s_DebugNumberEnemy);
+				enemy.SetEnemy(D3DXVECTOR3(Mouse.x, Mouse.y, 0.0f), D3DXVECTOR3(0.0f, 0.0f, 0.0f), (ENEMY_TYPE)s_DebugNumberEnemy);
 			}
 		}
 	}
-	SelectDes(Mouse);
+	enemy.SelectDes(Mouse);
 }
 
 //------------------------
@@ -308,4 +308,9 @@ bool GetEnemyAlignment()
 int GetDebugNumberEnemy()
 {
 	return s_DebugNumberEnemy;
+}
+
+CEnemy *GetEnemy()
+{
+	return &enemy;
 }

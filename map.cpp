@@ -368,7 +368,7 @@ Map *GetMap(void)
 //==================
 void ConteSet(int nStage)
 {
-	LoadSetFile("Data/teki001.txt");
+	//LoadSetFile("Data/teki001.txt");
 	s_PosOffset.y = 0.0f;
 	// マップの設定。
 	//falseSetEnemy();
@@ -382,7 +382,7 @@ void ConteSet(int nStage)
 void PasSetMap(char *Filename)
 {
 	//ファイルを開く
-	Enemy *Enemy = GetEnemy();
+	Enemy *Enemy = GetEnemy()->GetEnemy();
 	FILE *pFile = fopen(&Filename[0], "r");
 	char s_aString[256];//ファイルの文字入れる
 	if (pFile != NULL)

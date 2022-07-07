@@ -10,6 +10,7 @@
 #include "enemy.h"
 #include <stdio.h>
 #include "map.h"
+#include "process.h"
 
 #include <crtdbg.h>
 #ifdef _DEBUG
@@ -314,7 +315,7 @@ void PalletMove(bool Set)
 void PasSetTex(char *Filename)
 {
 	//ファイルを開く
-	Enemy *Enemy = GetEnemy();
+	Enemy *Enemy = GetEnemy()->GetEnemy();
 	FILE *pFile = fopen(&Filename[0], "r");
 	char	s_aString[256];//ファイルの文字入れる
 	if (pFile != NULL)

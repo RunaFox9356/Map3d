@@ -1,6 +1,6 @@
 //============================
 //
-// プレイヤー設定ヘッター
+// ENEMY設定ヘッター
 // Author:hamada ryuuga
 //
 //============================
@@ -15,6 +15,14 @@
 // マクロ
 //------------------------------------
 #define MAX_MODELPARTS (9)
+#define MAX_ENEMY	(100)	// 最大エネミー数
+#define SIZE_ENEMY (D3DXVECTOR3(50.0f,50.0f,0.0f))
+//#define ATTENUATION	(0.5f)		//減衰係数
+//#define SPEED	(1.0f)			//スピード
+#define WIDTH (10.0f)			//モデルの半径
+#define MAX_PRAYER (16)			//最大数
+#define MAX_MOVE (9)			//アニメーションの最大数
+#define INVINCIBLE (300)		//無敵時間
 
 //------------------------------------
 // 種別の列挙型
@@ -82,20 +90,46 @@ typedef struct
 	bool		notLoop;					// ループするかしないか
 }Enemy;
 
-//プロトタイプ宣言
-void InitEnemy(void);	// 初期化
-void UninitEnemy(void);	// 破棄
-void UpdateEnemy(void);	// 更新
-void DrawEnemy(void);	// 描画
 
-void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type);//セット引数座標と読み込むファイル名
-void SizeSet(void);//当たり判定取得
-Enemy *GetEnemy(void);//ゲット
-void LoadEnemy(void);	// 読込
-void LoadSetFile(char *Filename);
-void OutputEnemy(char *Filename);
+//------------------
+//クラス
+//-------------------
+class CEnemy
+{
+public:
+	CEnemy();
+	~CEnemy();
 
-void SelectDes(D3DXVECTOR3 pos);
-//void falseSetEnemy(void);
-//void selectDes(D3DXVECTOR3 Mouse, D3DXVECTOR3 Size);
+	//プロトタイプ宣言
+	void Init(void);	// 初期化
+	void Uninit(void);	// 破棄
+	void Update(void);	// 更新
+	void Draw(void);	// 描画
+
+	void SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type);//セット引数座標と読み込むファイル名
+	void SizeSet(void);//当たり判定取得
+	Enemy *GetEnemy(void);//ゲット
+	void LoadEnemy(Enemy * pEnemy);	// 読込
+	void LoadSetFile(char *Filename);
+	void OutputEnemy(char *Filename);
+
+	void SelectDes(D3DXVECTOR3 pos);
+	
+	void Loadmotion(CPlayer::MODELDATAPLAYER* set, int Setnumber);	// モーションの読込
+	void AnimationSet(int animation);						// アニメーションの計算
+	void MoveSet(void);										// ムーブセット
+	void Collision(void);									// 当たり判定まとめ
+private:
+	 Enemy s_Enemy[MAX_ENEMY];		// エネミーの構造体
+	 Enemy s_EnemyType[ENEMY_TYPE_MAX];	// エネミー種別の構造体
+	 CPlayer::MODELDATAPLAYER s_ModelData[MAX_MOVE];
+
+	float s_fMapScale;
+	float s_fLog;
+	const D3DXVECTOR3 s_Move = D3DXVECTOR3(5.0f, 0.0f, 0.0f);
+
+	int s_pow;	// ジャンプパワー
+	int s_nMotion; //	
+
+};
 #endif
