@@ -43,7 +43,8 @@ public:
 	CAMERA *Get(); //ƒQƒbƒg
 	D3DXMATRIX *GetMtxProje();
 	D3DXMATRIX *GetMtxView();
-	
+	void Savemove();
+	void Loadmove();
 private:
 	float m_Speed = 1.0f;
 

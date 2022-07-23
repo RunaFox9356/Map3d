@@ -7,6 +7,14 @@
 #include "camera.h"
 #include "input.h"
 
+#include "file.h"
+#include "letter.h"
+
+
+//Particle DataEffect;
+namespace nl = nlohmann;
+
+static nl::json Camera;//リストの生成
 
 //----------------------------
 //コンストラクト
@@ -153,9 +161,17 @@ void CCamera::Update(void)
 	}
 	if (GetKeyboardTrigger(DIK_K))
 	{
-		int Number =GetCameraSystem();
+		int Number = GetCameraSystem();
 		posVlog[Number] = m_aCamera.posV;
 		posRlog[Number] = m_aCamera.posR;
+	}
+	if (GetKeyboardTrigger(DIK_P))
+	{
+		Savemove();
+	}
+	if (GetKeyboardTrigger(DIK_M))
+	{
+		Loadmove();
 	}
 	//変数宣言
 	if (m_aCamera.bStartBool)
@@ -250,3 +266,63 @@ D3DXMATRIX *CCamera::GetMtxView()
 	return &m_aCamera.MtxView;
 }
 
+
+void CCamera::Savemove()
+{
+	int nIndex = 0;
+
+	for (int nCnt = 0; nCnt < MAX_CAMERAKEY; nCnt++)
+	{
+
+		    std::string name = "CAMERA";
+			std::string Number = std::to_string(nIndex);
+			name += Number;
+			Camera[name] = 
+			{
+				{ "Vlog",{
+					{ "X", posVlog[nCnt].x } ,
+					{ "Y", posVlog[nCnt].y } ,
+					{ "Z",posVlog[nCnt].z } } },
+				{ "Rlog",{
+					{ "X", posRlog[nCnt].x } ,
+					{ "Y", posRlog[nCnt].y } ,
+					{ "Z", posRlog[nCnt].z } } }
+			};
+			nIndex++;
+	}
+	Camera["INDEX"] = nIndex;
+
+	auto jobj = Camera.dump();
+	std::ofstream writing_file;
+	const std::string pathToJSON = "data//Out.json";
+	writing_file.open(pathToJSON, std::ios::out);
+	writing_file << jobj << std::endl;
+	writing_file.close();
+}
+
+void CCamera::Loadmove()
+{
+	std::ifstream ifs("data//Out.json");
+
+	int nIndex = 0;
+
+	if (ifs)
+	{
+		ifs >> Camera;
+		nIndex = Camera["INDEX"];
+		D3DXVECTOR3 pos;
+		D3DXVECTOR3 size;
+		D3DXVECTOR3 rot;
+		int Life;
+		for (int nCnt = 0; nCnt < nIndex; nCnt++)
+		{
+			std::string name = "CAMERA";
+			std::string Number = std::to_string(nCnt);
+			name += Number;
+
+			posVlog[nCnt] = D3DXVECTOR3(Camera[name]["Vlog"]["X"], Camera[name]["Vlog"]["Y"], Camera[name]["Vlog"]["Z"]);
+			posRlog[nCnt] = D3DXVECTOR3(Camera[name]["Rlog"]["X"], Camera[name]["Rlog"]["Y"], Camera[name]["Rlog"]["Z"]);
+
+		}
+	}
+}

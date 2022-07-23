@@ -84,8 +84,10 @@ void Uninit(void);				// 破棄
 void Update(HWND hWnd);			// 更新
 void Draw(void);				// 描画
 int GetFPS();					// FPSの取得
+
 CCamera *GetCamera();
 int GetCameraSystem();
+int GetLife();
 //=========================================
 //セットの設定まとめ
 //=========================================
@@ -94,5 +96,5 @@ void Settex2d(VERTEX_2D *pVtx, float left, float right, float top, float down);
 void SetNormalpos2d(VERTEX_2D *pVtx, float XUP, float XDW, float YUP, float YDW);
 void SetNormalpos(VERTEX_3D *pVtx, float XUP, float XDW, float YUP, float YDW, float ZUP, float ZDW);
 void SetUp(VERTEX_2D *pVtx, float posx, float posy, float rotPlayer, float fAngleAttack, float fLengthAttack);
-void Allfalse(void);
+
 #endif

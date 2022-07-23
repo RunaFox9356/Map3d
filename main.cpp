@@ -50,6 +50,7 @@ bool show_demo_window = true;//基本の呼び出し
 bool show_another_window = false;//もう一つ呼び出し
 static char Txet[8] = "";
 
+int EnemyLife = 10;
 int camera = 0;//もう一つ呼び出し
 
 
@@ -834,8 +835,10 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 
 
 	ImGui::Begin("CameraSystem");                          // Create a window called "Hello, world!" and append into it.
+	
+	CAMERA *pCamera = GetCamera()->Get();
 
-
+	ImGui::Text("Y debug |A ModeChange |LCONTROL PALLET | MOUSE_INPUT_LEFT Change|DIK_J kamerakirikae | DIK_L saisei |DIK_K	keySave|DIK_P　JSONSave|DIK_M　JSONload");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
 	ImGui::SliderInt("Number", &camera, 0, 10);
 
 	ImGui::End();
@@ -844,9 +847,8 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 		// Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 		if (show_demo_window)
 		{
+			
 			int MapSet = GetDebugNumber();
-			CAMERA *pCamera = GetCamera()->Get();
-
 			ImGui::Begin("MapMode");                          // Create a window called "Hello, world!" and append into it.
 
 			ImGui::Text("(%.1f PosV)(%.1f PosR)", pCamera->posV.x, pCamera->posR.x);
@@ -885,7 +887,7 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 
 			ImGui::SliderInt("Type", &EnemySet, 0, 10);
 
-			
+			ImGui::SliderInt("Life", &EnemyLife, 0, 100);
 			//EnemySet = Button(EnemySet);
 
 			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
@@ -935,4 +937,12 @@ CCamera *GetCamera()
 int GetCameraSystem()
 {
 	return camera;
+}
+
+//=============================================================================
+// GetLife関数
+//=============================================================================
+int GetLife()
+{
+	return EnemyLife;
 }

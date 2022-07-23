@@ -15,7 +15,7 @@
 // マクロ
 //------------------------------------
 #define MAX_MODELPARTS (9)
-#define MAX_ENEMY	(100)	// 最大エネミー数
+#define MAX_ENEMY	(500)	// 最大エネミー数
 #define SIZE_ENEMY (D3DXVECTOR3(50.0f,50.0f,0.0f))
 //#define ATTENUATION	(0.5f)		//減衰係数
 //#define SPEED	(1.0f)			//スピード
@@ -77,9 +77,9 @@ typedef struct
 	int			nMaxModelType;				// モデルのタイプ数
 	int			nMaxModelParts;				// 扱うモデルパーツ数
 	int			nMaxMotion;					// モーション数
-
+	int         nLife;
 	int			nInvincible;				// 無敵時間
-	int			nParts;	// パーツの最大数
+	int			nParts;	                    // パーツの最大数
 	float		fConsumption;				// 計算用
 	float		fLog;
 	bool		bMotionBlend;				// モーションブレンド
