@@ -310,7 +310,7 @@ void  CEnemy::SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
 		pEnemy->nLife = GetLife();
 		//pEnemy->isUse = true;								// 使用状況
-
+		pEnemy->type = type;
 		break;
 	}
 }
@@ -532,6 +532,7 @@ void  CEnemy::LoadEnemy(Enemy * pEnemy)
 			pEnemy->isUse = true;								// 使用状況
 			pEnemy->bMotionBlend = false;						// プレイヤーがディスクを持っていない
 			pEnemy->nLife = GetLife();
+	
 			// ファイルの読み込み
 			LoodSetMotion(fileName[fileCnt], pEnemy->partsFile, pEnemy->parts, pEnemy->motion, &pEnemy->nMaxModelParts);
 

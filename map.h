@@ -24,11 +24,11 @@
 #define Y_MAP		(8)			//マップチップサイズY
 #define MAX_MAP		(X_MAP*Y_MAP)
 #define MAP_SIZEX	(1000)		//マップサイズX
-#define MAP_SIZEY	(10)		//マップサイズY
+#define MAP_SIZEY	(15)		//マップサイズY
 #define MAPYLENGTH	(10)		//マップの長さ
 #define BLOCKSIZEX	(BLOCKSIZEY)
 #define BLOCKSIZEY	((float)SCREEN_HEIGHT/MAP_SIZEY)//
-#define MAPMOVE (5.0f)
+#define MAPMOVE (3.0f)	
 
 //-------------
 //構造体

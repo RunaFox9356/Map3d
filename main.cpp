@@ -128,8 +128,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hlnstacePrev, LPSTR ipCmdLine,
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	ImFontConfig config;
 config.MergeMode = true;
-io.Fonts->AddFontDefault();
-	io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\meiryo.ttc", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+
+	io.Fonts->AddFontFromFileTTF("data/GenShinGothic-Bold.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 
 
 	// Setup Dear ImGui style
@@ -838,7 +838,7 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 	
 	CAMERA *pCamera = GetCamera()->Get();
 
-	ImGui::Text("Y debug |A ModeChange |LCONTROL PALLET | MOUSE_INPUT_LEFT Change|DIK_J kamerakirikae | DIK_L saisei |DIK_K	keySave|DIK_P　JSONSave|DIK_M　JSONload");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
+	ImGui::Text(u8"Y debug \nA かめらモード \nLCONTROL PALLET \n MOUSE_INPUT_LEFT Change\nDIK_J かめらの動き切り替え \n DIK_L keyー再生 \nDIK_K	keySave\nDIK_P　JSONに保存\nDIK_M　JSONロード");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
 	ImGui::SliderInt("Number", &camera, 0, 10);
 
 	ImGui::End();
@@ -849,10 +849,10 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 		{
 			
 			int MapSet = GetDebugNumber();
-			ImGui::Begin("MapMode");                          // Create a window called "Hello, world!" and append into it.
+			ImGui::Begin(u8"マップ");                          // Create a window called "Hello, world!" and append into it.
 
 			ImGui::Text("(%.1f PosV)(%.1f PosR)", pCamera->posV.x, pCamera->posR.x);
-			ImGui::Text("Y debug |A ModeChange |LCONTROL PALLET | MOUSE_INPUT_LEFT Change");               // Display some text (you can use a format strings too
+			ImGui::Text(u8"Y debug |A エネミーに切り替え |LCONTROL パレット表示 | MOUSE_INPUT_LEFT 変換");               // Display some text (you can use a format strings too
 			ImGui::InputText("textbox 1", Txet, sizeof(Txet));
 			//ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 			ImGui::Checkbox("Another Window", &show_another_window);
@@ -879,15 +879,15 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 			ImGui::Text("");               // Display some text (you can use a format strings too
 
 			ImGui::Begin("EnemyMode");                          // Create a window called "Hello, world!" and append into it.
-			ImGui::Text("Y debug |A ModeChange |LCONTROL PALLET | MOUSE_INPUT_LEFT Change");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
-			ImGui::Text("LCONTROL & Z Select|LCONTROL& D delete");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
+			ImGui::Text(u8"Y debug |A マップに切り替え |S 次のモデル |LCONTROL パレット表示 | MOUSE_INPUT_LEFT 変換");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
+			ImGui::Text(u8"LCONTROL & Z 選択|LCONTROL& D 削除");               // Display some text (you can use a format strings too            // Display some text (you can use a format strings too
 			ImGui::InputText("textbox 1", Txet, sizeof(Txet));
 
 			ImGui::Checkbox("Another Window", &show_another_window);
 
-			ImGui::SliderInt("Type", &EnemySet, 0, 10);
+			ImGui::SliderInt(u8"タイプ", &EnemySet, 0, 10);
 
-			ImGui::SliderInt("Life", &EnemyLife, 0, 100);
+			ImGui::SliderInt(u8"ライフ", &EnemyLife, 0, 100);
 			//EnemySet = Button(EnemySet);
 
 			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
@@ -905,7 +905,7 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 
 int Button(int nSize)
 {
-	if (ImGui::Button("1++"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+	if (ImGui::Button("1++"))                      // Buttons return true when clicked (most widgets return true when edited/activated)
 	{
 		nSize++;
 	}

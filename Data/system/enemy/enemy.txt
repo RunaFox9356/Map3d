@@ -1,5 +1,6 @@
 SCRIPT
-MODEL_FILENAME = Data/system/enemy/FoxBlock.txt
-MODEL_FILENAME = Data/system/enemy/FoxPoizun.txt
+MODEL_FILENAME = Data/system/enemy/Raccoon.txt
+MODEL_FILENAME = Data/system/enemy/ponske.txt
+MODEL_FILENAME = Data/system/enemy/Kuma.txt
 
 END_SCRIPT
