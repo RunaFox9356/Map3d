@@ -434,9 +434,7 @@ int SopiteMap(D3DXVECTOR3 pos)
 		if (((mapPos.x < pos.x) && (mapPos.x + MAP_SIZEY * s_fMapScale > pos.x)) &&
 			((mapPos.y < pos.y) && (mapPos.y + MAP_SIZEY * s_fMapScale > pos.y)))
 		{
-
 			Hit = s_aMap[i].tex;
-		
 		}
 	}
 	return Hit;

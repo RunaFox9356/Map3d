@@ -15,7 +15,7 @@
 // マクロ
 //------------------------------------
 #define MAX_MODELPARTS (9)
-#define MAX_ENEMY	(500)	// 最大エネミー数
+#define MAX_ENEMY	(1000)	// 最大エネミー数
 #define SIZE_ENEMY (D3DXVECTOR3(50.0f,50.0f,0.0f))
 //#define ATTENUATION	(0.5f)		//減衰係数
 //#define SPEED	(1.0f)			//スピード
@@ -119,6 +119,7 @@ public:
 	void AnimationSet(int animation);						// アニメーションの計算
 	void MoveSet(void);										// ムーブセット
 	void Collision(void);									// 当たり判定まとめ
+
 private:
 	 Enemy s_Enemy[MAX_ENEMY];		// エネミーの構造体
 	 Enemy s_EnemyType[ENEMY_TYPE_MAX];	// エネミー種別の構造体

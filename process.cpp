@@ -171,7 +171,7 @@ void EnemySetSystem(D3DXVECTOR3 Mouse)
 	if (GetMouseTrigger(MOUSE_INPUT_RIGHT))
 	{//マウスポインターの位置
 		s_DebugNumberEnemy++;
-		s_DebugNumberEnemy %= (int)2;
+		s_DebugNumberEnemy %= (int)4;
 		if (GetKeyboardPress(DIK_LCONTROL))
 		{
 			s_DebugNumberEnemy = CollisionPalletE(Mouse);

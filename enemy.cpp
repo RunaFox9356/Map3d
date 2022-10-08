@@ -306,7 +306,7 @@ void  CEnemy::SetEnemy(D3DXVECTOR3 pos, D3DXVECTOR3 rot, ENEMY_TYPE type)
 		pEnemy->mtxWorld = {};								// ワールドマトリックス
 		pEnemy->motionType = CPlayer::ANIME_NORMAL;					// ニュートラルモーション
 		pEnemy->motionTypeOld = pEnemy->motionType;			// 前回のモーション
-		pEnemy->move = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
+		pEnemy->move = D3DXVECTOR3(GetMove().x, GetMove().y,GetMove().z);		// 移動量
 		pEnemy->bMotionBlend = false;						// モーションブレンドの使用状況
 		pEnemy->nLife = GetLife();
 		//pEnemy->isUse = true;								// 使用状況
@@ -390,83 +390,7 @@ Enemy * CEnemy::GetEnemy(void)
 //----------------------
 void  CEnemy::LoadSetFile(char *Filename)
 {
-	FILE *pFile = fopen(Filename, "r");
-	if (pFile == NULL)
-	{//ファイルが開いた場合
-		assert(false);
-		return;
-	}
-	D3DXVECTOR3 pos = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// 移動量
-	D3DXVECTOR3 size = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// サイズ
-	D3DXVECTOR3 rot = D3DXVECTOR3(0.0f, 0.0f, 0.0f);		// ロット
-	char aString[128] = {};			// 文字列比較用の変数
-	char aEqual[128] = {};		// ＝読み込み用変数
-	int nType = 0;
-	fscanf(pFile, "%s", &aString);
 
-	while (strncmp(&aString[0], "SCRIPT", 6) != 0)
-	{// 文字列が一致した場合
-		aString[0] = {};
-		// 文字列の読み込み
-		fscanf(pFile, "%s", &aString[0]);
-	}
-	while (strncmp(&aString[0], "END_SCRIPT", 10) != 0)
-	{
-		fscanf(pFile, "%s", &aString[0]);
-
-		if (strncmp(&aString[0], "#", 1) == 0)
-		{// 一列読み込むコメント
-			fgets(&aString[0], sizeof(aString), pFile);
-		}
-		if (strcmp(&aString[0], "SET_ENEMY") == 0)
-		{
-			while (1)
-			{
-				fscanf(pFile, "%s", &aString[0]);
-
-				if (strncmp(&aString[0], "#", 1) == 0)
-				{// 一列読み込むコメント
-					fgets(&aString[0], sizeof(aString), pFile);
-				}
-				if (strcmp(&aString[0], "POS") == 0)
-				{// POSの読み込み
-					fscanf(pFile, "%s", &aEqual[0]);
-
-					fscanf(pFile, "%f", &pos.x);
-					fscanf(pFile, "%f", &pos.y);
-					fscanf(pFile, "%f", &pos.z);
-				}
-				if (strcmp(&aString[0], "SIZE") == 0)
-				{// SIZEの読み込み
-					fscanf(pFile, "%s", &aEqual[0]);
-
-					fscanf(pFile, "%f", &size.x);
-					fscanf(pFile, "%f", &size.y);
-					fscanf(pFile, "%f", &size.z);
-				}
-				if (strcmp(&aString[0], "ROT") == 0)
-				{// ROTの読み込み
-					fscanf(pFile, "%s", &aEqual[0]);
-
-					fscanf(pFile, "%f", &rot.x);
-					fscanf(pFile, "%f", &rot.y);
-					fscanf(pFile, "%f", &rot.z);
-				}
-				if (strcmp(&aString[0], "TYPE") == 0)
-				{
-					fscanf(pFile, "%s", &aEqual[0]);
-
-					fscanf(pFile, "%d", &nType);
-				}
-				if (strcmp(&aString[0], "END_SET") == 0)
-				{
-					SetEnemy(pos, rot, (ENEMY_TYPE)nType);
-					break;
-				}
-			}
-		}
-	}
-	fclose(pFile);
 }
 
 //----------------------
@@ -675,6 +599,10 @@ void  CEnemy::OutputEnemy(char *Filename)
 				{ "X", s_Enemy[nCntEnemy].rot.x } ,
 				{ "Y", s_Enemy[nCntEnemy].rot.y } ,
 				{ "Z", s_Enemy[nCntEnemy].rot.z }}} ,
+			{ "MOVE",{
+				{ "X", s_Enemy[nCntEnemy].rot.x } ,
+				{ "Y", s_Enemy[nCntEnemy].rot.y } ,
+				{ "Z", s_Enemy[nCntEnemy].rot.z } } } ,
 			{"TYPE",  (int)s_Enemy[nCntEnemy].type}, 
 			{"LIFE",  s_Enemy[nCntEnemy].nLife }};
 			nIndex++;

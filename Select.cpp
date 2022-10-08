@@ -127,7 +127,9 @@ void InitSelect(void)
 	s_fSelectScale = 1.0f;
 }
 
-//”jŠü
+//================
+//‰Šú‰»ˆ—
+//================
 void UninitSelect(void)
 {
 	stage = 0;

@@ -46,6 +46,8 @@ static int s_nCountFPS;							// FPSのカウンター
 static bool bPress = false;						// リボンバーのトリガー処理のために必要な変数
 D3DPRESENT_PARAMETERS    g_d3dpp = {};
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+HamadaVec3 move = HamadaVec3(0.45f, 0.55f, 0.60f);
+
 bool show_demo_window = true;//基本の呼び出し
 bool show_another_window = false;//もう一つ呼び出し
 static char Txet[8] = "";
@@ -861,8 +863,8 @@ bool ImGuiTxet(bool show_demo_window, bool show_another_window)
 
 			//ImGui::SliderFloat("float", &f, 0.0f, 93.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-
+			ImGui::SliderFloat3("move", (float*)&move,0.0f,10.0f);
+			
 			ImGui::SameLine();
 			setDebugNumber(MapSet);
 			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -945,4 +947,9 @@ int GetCameraSystem()
 int GetLife()
 {
 	return EnemyLife;
+}
+
+HamadaVec3 GetMove()
+{
+	return move;
 }

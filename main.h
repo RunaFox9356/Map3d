@@ -35,6 +35,16 @@
 #define WORLDSIZ (100.0f)
 #define ZERO_VECTOR		(D3DXVECTOR3(0.0f, 0.0f, 0.0f))		// ゼロベクトル
 #define ZERO_QUATERNION	(D3DXQUATERNION(0.0f,0.0f,0.0f,1.0f))
+
+
+struct HamadaVec3
+{
+	float                                                     x, y, z;
+	constexpr HamadaVec3() : x(0.0f), y(0.0f), z(0.0f) {}
+	constexpr HamadaVec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) { }
+
+};
+
 class CCamera;
 
 //=========================================
@@ -88,6 +98,7 @@ int GetFPS();					// FPSの取得
 CCamera *GetCamera();
 int GetCameraSystem();
 int GetLife();
+HamadaVec3 GetMove();
 //=========================================
 //セットの設定まとめ
 //=========================================

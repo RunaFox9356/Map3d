@@ -1,6 +1,9 @@
 SCRIPT
 MODEL_FILENAME = Data/system/enemy/Raccoon.txt
 MODEL_FILENAME = Data/system/enemy/ponske.txt
+MODEL_FILENAME = Data/system/enemy/snake.txt
+MODEL_FILENAME = Data/system/enemy/neko.txt
 MODEL_FILENAME = Data/system/enemy/Kuma.txt
+
 
 END_SCRIPT
